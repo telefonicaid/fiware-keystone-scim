@@ -1,0 +1,17 @@
+*.pyc
+*.egg/
+.venv
+.tox
+keystone_scim.egg-info/
+*.log
+.coverage
+coverage.xml
+cover/*
+pep8.txt
+nosetests.xml
+.DS_Store
+build/
+dist/
+keystone_scim/tests/tmp/
+.testrepository/
+*.db

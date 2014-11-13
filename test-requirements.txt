@@ -1,0 +1,5 @@
+hacking>=0.9.2,<0.10
+testrepository>=0.0.18
+python-subunit>=0.0.18
+mock>=1.0
+WebTest>=2.0
