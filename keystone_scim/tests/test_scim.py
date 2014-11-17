@@ -39,11 +39,6 @@ class BaseCRUDTests(object):
     EXTENSION_NAME = 'scim'
     EXTENSION_TO_ADD = 'scim_extension'
 
-#    def setUp(self):
-#        super(BaseCRUDTests, self).setUp()
-#        self.base_url = 'http://localhost/v3'
-#        self.controller = controllers.ScimUserV3Controller()
-
     def build_entity(self, *args, **kwarws):
         raise NotImplementedError
 
