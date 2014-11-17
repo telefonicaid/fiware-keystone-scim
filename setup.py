@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright 2014 Telefonica Investigación y Desarrollo, S.A.U
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
