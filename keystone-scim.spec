@@ -90,6 +90,14 @@ else
   echo "Already defined scim_get_service_provider_configs. Skipping."
 fi
 
+if ! grep -q -F "identity:scim_get_schemas "%{keystone_policy}"; then
+  echo "Adding scim_get_schemas default policy."
+  sed -i "s/\"$/\",\n   \"identity:scim_get_schemas\"\: \"\"/" \
+    %{keystone_policy}
+else
+  echo "Already defined scim_get_schemas. Skipping."
+fi
+
 echo "SCIM extension installed successfully. Restart Keystone daemon to take effect."
 
 %preun

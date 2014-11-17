@@ -64,6 +64,7 @@ Sample permissions:
 "identity:scim_update_role": "rule:admin_required"
 "identity:scim_delete_role": "rule:admin_required"
 "identity:scim_get_service_provider_configs": ""
+"identity:scim_get_schemas": ""
 ```
 
 Recommended (and tested) permissions for a Keystone domain aware configuration
@@ -77,6 +78,7 @@ Recommended (and tested) permissions for a Keystone domain aware configuration
 "identity:scim_list_roles": "rule:cloud_admin or rule:admin_and_matching_domain_id"
 "identity:scim_create_role": "rule:cloud_admin or rule:admin_and_matching_domain_id"
 "identity:scim_get_service_provider_configs": ""
+"identity:scim_get_schemas": ""
 ```
 
 ## Usage

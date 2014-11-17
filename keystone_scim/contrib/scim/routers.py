@@ -136,3 +136,8 @@ class ScimRouter(wsgi.ExtensionRouter):
                        controller=scim_info_controller,
                        action='scim_get_service_provider_configs',
                        conditions=dict(method=['GET']))
+
+        mapper.connect(self.PATH_PREFIX + '/Schemas',
+                       controller=scim_info_controller,
+                       action='scim_get_schemas',
+                       conditions=dict(method=['GET']))
