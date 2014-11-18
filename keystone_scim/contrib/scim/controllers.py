@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Telefonica Investigación y Desarrollo, S.A.U
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -39,8 +39,13 @@ class ScimInfoController(wsgi.Application):
     def __init__(self):
         super(ScimInfoController, self).__init__()
 
+    @controller.protected()
     def scim_get_service_provider_configs(self, context):
         return schemas.SERVICE_PROVIDER_CONFIGS
+
+    @controller.protected()
+    def scim_get_schemas(self, context):
+        return schemas.SCHEMAS
 
 class ScimUserV3Controller(UserV3):
 

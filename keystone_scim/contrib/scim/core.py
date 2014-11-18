@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
 #
@@ -20,16 +18,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import setuptools
+from keystone.common import extension
 
-# In python < 2.7.4, a lazy loading of package `pbr` will break
-# setuptools if some other modules registered functions in `atexit`.
-# solution from: http://bugs.python.org/issue15881#msg170215
-try:
-    import multiprocessing  # noqa
-except ImportError:
-    pass
 
-setuptools.setup(
-    setup_requires=['pbr'],
-    pbr=True)
+EXTENSION_DATA = {
+    'name': 'OpenStack SCIM API',
+    'namespace': 'https://github.com/telefonicaid/fiware-keystone-scim',
+    'alias': 'OS-SCIM',
+    'updated': '2014-11-17T12:00:0-00:00',
+    'description': 'Openstack SCIM extension',
+    'links': [
+        {
+            'rel': 'describedby',
+            # TODO(ayoung): needs a description
+            'type': 'text/html',
+            'href': 'https://github.com/telefonicaid/fiware-keystone-scim/blob/master/README.md',
+            }
+    ]}
+extension.register_admin_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
+extension.register_public_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)

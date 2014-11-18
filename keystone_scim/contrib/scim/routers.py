@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Telefonica Investigación y Desarrollo, S.A.U
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -135,4 +135,9 @@ class ScimRouter(wsgi.ExtensionRouter):
         mapper.connect(self.PATH_PREFIX + '/ServiceProviderConfigs',
                        controller=scim_info_controller,
                        action='scim_get_service_provider_configs',
+                       conditions=dict(method=['GET']))
+
+        mapper.connect(self.PATH_PREFIX + '/Schemas',
+                       controller=scim_info_controller,
+                       action='scim_get_schemas',
                        conditions=dict(method=['GET']))
