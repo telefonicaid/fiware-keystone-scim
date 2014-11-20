@@ -311,10 +311,5 @@ The response should look like:
 
 ## Known limitations and future work
 
-* SCIM pagination is not yet implemented.
 * It's unclear if SCIM standard specifies or not the format of Error messages.
   This extension reuses Keystone error messages.
-* Some Keystone attributes (like User `description`) is not mapped to SCIM. It
-  could have been mapped to `displayName` (and it's pretty easy to be
-  implemented), but semantically does not seem to mean the same. So in case of
-  any doubt we have preferred to omit attributes without a clear translation.
