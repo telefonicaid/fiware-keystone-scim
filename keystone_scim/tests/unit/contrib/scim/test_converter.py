@@ -31,6 +31,7 @@ class TestUserScimConverter(tests.BaseTestCase):
                         'urn:scim:schemas:extension:keystone:1.0'],
             'id': '19041ee7679649879ada04417753ad4d',
             'userName': 'alice',
+            'displayName': 'Alice Smith',
             'emails': [
                 {
                     'value': 'alice@mailhost.com'
@@ -48,6 +49,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
             'email': 'alice@mailhost.com',
             'name': 'alice',
+            'description': 'Alice Smith',
             'password': 's0m3p4ssw0rd',
             'enabled': True
         }
@@ -77,6 +79,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
             'email': 'alice@mailhost.com',
             'name': 'alice',
+            'description': 'Alice Smith',
             'enabled': True
         }
 
@@ -85,6 +88,7 @@ class TestUserScimConverter(tests.BaseTestCase):
                         'urn:scim:schemas:extension:keystone:1.0'],
             'id': '19041ee7679649879ada04417753ad4d',
             'userName': 'alice',
+            'displayName': 'Alice Smith',
             'emails': [
                 {
                     'value': 'alice@mailhost.com'

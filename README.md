@@ -109,6 +109,7 @@ curl http://<KEYSTONE>:5000/v3/OS-SCIM/Users \
     "schemas": ["urn:scim:schemas:core:1.0",
                 "urn:scim:schemas:extension:keystone:1.0"],
     "userName": "alice",
+    "displayName": "Alice Smith",
     "password": "passw0rd",
     "emails": [
         {
@@ -127,6 +128,7 @@ Response:
 ```json
 {
   "userName": "alice",
+  "displayName": "Alice Smith",
   "urn:scim:schemas:extension:keystone:1.0": {
     "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
   },
