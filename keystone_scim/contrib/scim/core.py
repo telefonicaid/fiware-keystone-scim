@@ -30,10 +30,30 @@ EXTENSION_DATA = {
     'links': [
         {
             'rel': 'describedby',
-            # TODO(ayoung): needs a description
             'type': 'text/html',
             'href': 'https://github.com/telefonicaid/fiware-keystone-scim/blob/master/README.md',
-            }
-    ]}
+        }
+    ]
+}
+
 extension.register_admin_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
 extension.register_public_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
+
+# Monkey patch SQL pagination
+
+def decorate_core_limit(f):
+    def limit_scim_extenstion(query, hints):
+        query = f(query, hints)
+        try:
+            query = query.limit(hints.scim_limit)
+        except AttributeError:
+            pass
+        try:
+            query = query.offset(hints.scim_offset)
+        except AttributeError:
+            pass
+        return query
+    return limit_scim_extenstion
+
+from keystone.common.sql import core
+core._limit = decorate_core_limit(core._limit)

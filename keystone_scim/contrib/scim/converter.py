@@ -39,6 +39,7 @@ def user_key2scim(ref, schema=True):
         else None,
         'id': ref.get('id', None),
         'userName': ref.get('name', None),
+        'displayName': ref.get('description', None),
         'active': ref.get('enabled', None),
         'emails': [{'value': ref['email']}] if 'email' in ref else None,
         _EXT_SCHEMA: {
@@ -63,6 +64,7 @@ def user_scim2key(scim):
         'id': scim.get('id', None),
         'enabled': scim.get('active', None),
         'name': scim.get('userName', None),
+        'description': scim.get('displayName', None),
         'password': scim.get('password', None)
     }
 

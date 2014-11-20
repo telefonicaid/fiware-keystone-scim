@@ -77,6 +77,19 @@ class BaseCRUDTests(object):
             ref_id=matching_listed[0]['id'], remove=['schemas'])
         self.assertEqual(expected_entity, matching_listed[0])
 
+    def test_list_pagination(self):
+        entities = []
+        for i in range(0, 3):
+            name = uuid.uuid4().hex
+            entities.append(self.build_entity(name, self.domain_id))
+            self.post(self.URL, body=entities[i])
+
+        count = 2
+        URL = ('%(base)s?domain_id=%(domain_id)s&count=%(count)s' %
+               {'base': self.URL, 'domain_id': self.domain_id, 'count': count})
+        res_entities = self.get(URL).result
+        self.assertEqual(count, len(res_entities['Resources']))
+
     def test_get(self):
         name = uuid.uuid4().hex
         entity = self.build_entity(name, self.domain_id)
