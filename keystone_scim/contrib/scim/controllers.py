@@ -34,6 +34,22 @@ CONF = config.CONF
 LOG = log.getLogger(__name__)
 
 
+def pagination(context, hints=None):
+    """Enhance Hints with SCIM pagination info (limit and offset)"""
+    q = context['query_string']
+    if hints is None:
+        hints = driver_hints.Hints()
+    try:
+        hints.scim_limit = q['count']
+    except KeyError:
+        pass
+    try:
+        hints.scim_offset = q['startIndex']
+    except KeyError:
+        pass
+    return hints
+
+
 class ScimInfoController(wsgi.Application):
 
     def __init__(self):
@@ -47,6 +63,7 @@ class ScimInfoController(wsgi.Application):
     def scim_get_schemas(self, context):
         return schemas.SCHEMAS
 
+
 class ScimUserV3Controller(UserV3):
 
     collection_name = 'users'
@@ -55,9 +72,13 @@ class ScimUserV3Controller(UserV3):
     def __init__(self):
         super(ScimUserV3Controller, self).__init__()
 
-    def list_users(self, context, filters=None):
-        ref = super(ScimUserV3Controller, self).list_users(context)
-        return conv.listusers_key2scim(ref['users'])
+    @controller.filterprotected('domain_id', 'enabled', 'name')
+    def list_users(self, context, filters):
+        hints = pagination(context, UserV3.build_driver_hints(context, filters))
+        refs = self.identity_api.list_users(
+            domain_scope=self._get_domain_id_for_request(context),
+            hints=hints)
+        return conv.listusers_key2scim(refs)
 
     def get_user(self, context, user_id):
         ref = super(ScimUserV3Controller, self).get_user(
@@ -89,8 +110,9 @@ class ScimUserV3Controller(UserV3):
             'urn_scim_schemas_extension_keystone_1.0', {})
         return data
 
+
 @dependency.requires('assignment_api')
-class ScimRoleV3Controller(UserV3):
+class ScimRoleV3Controller(controller.V3Controller):
 
     collection_name = 'roles'
     member_name = 'role'
@@ -102,11 +124,14 @@ class ScimRoleV3Controller(UserV3):
     @controller.filterprotected('domain_id')
     def scim_list_roles(self, context, filters):
         hints = driver_hints.Hints()
-        domain_id = context['query_string'].get('domain_id', None)
-        if domain_id:
-            hints.add_filter('name', '%s%s' % (domain_id, conv.ROLE_SEP),
+        try:
+            hints.add_filter('name',
+                             '%s%s' % (context['query_string']['domain_id'],
+                                       conv.ROLE_SEP),
                              comparator='startswith', case_sensitive=False)
-        refs = self.assignment_api.list_roles(hints=hints)
+        except KeyError:
+            pass
+        refs = self.assignment_api.list_roles(hints=pagination(context, hints))
         return conv.listroles_key2scim(refs)
 
     @controller.protected()
@@ -149,9 +174,13 @@ class ScimGroupV3Controller(GroupV3):
     def __init__(self):
         super(ScimGroupV3Controller, self).__init__()
 
-    def list_groups(self, context, filters=None):
-        ref = super(ScimGroupV3Controller, self).list_groups(context)
-        return conv.listgroups_key2scim(ref['groups'])
+    @controller.filterprotected('domain_id', 'name')
+    def list_groups(self, context, filters):
+        hints = pagination(context, GroupV3.build_driver_hints(context, filters))
+        refs = self.identity_api.list_groups(
+            domain_scope=self._get_domain_id_for_request(context),
+            hints=hints)
+        return conv.listgroups_key2scim(refs)
 
     def get_group(self, context, group_id):
         ref = super(ScimGroupV3Controller, self).get_group(

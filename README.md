@@ -172,6 +172,9 @@ Response:
 }
 ```
 
+Listing supports pagination as defined by SCIM standard, using `count` and
+`startIndex` query params.
+
 Creating Role:
 
 ```json
