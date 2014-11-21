@@ -64,6 +64,7 @@ Sample permissions:
 "identity:scim_update_role": "rule:admin_required"
 "identity:scim_delete_role": "rule:admin_required"
 "identity:scim_get_service_provider_configs": ""
+"identity:scim_get_schemas": ""
 ```
 
 Recommended (and tested) permissions for a Keystone domain aware configuration
@@ -77,6 +78,7 @@ Recommended (and tested) permissions for a Keystone domain aware configuration
 "identity:scim_list_roles": "rule:cloud_admin or rule:admin_and_matching_domain_id"
 "identity:scim_create_role": "rule:cloud_admin or rule:admin_and_matching_domain_id"
 "identity:scim_get_service_provider_configs": ""
+"identity:scim_get_schemas": ""
 ```
 
 ## Usage
@@ -107,6 +109,7 @@ curl http://<KEYSTONE>:5000/v3/OS-SCIM/Users \
     "schemas": ["urn:scim:schemas:core:1.0",
                 "urn:scim:schemas:extension:keystone:1.0"],
     "userName": "alice",
+    "displayName": "Alice Smith",
     "password": "passw0rd",
     "emails": [
         {
@@ -125,6 +128,7 @@ Response:
 ```json
 {
   "userName": "alice",
+  "displayName": "Alice Smith",
   "urn:scim:schemas:extension:keystone:1.0": {
     "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
   },
@@ -169,6 +173,9 @@ Response:
   ]
 }
 ```
+
+Listing supports pagination as defined by SCIM standard, using `count` and
+`startIndex` query params.
 
 Creating Role:
 
@@ -304,10 +311,5 @@ The response should look like:
 
 ## Known limitations and future work
 
-* SCIM pagination is not yet implemented.
 * It's unclear if SCIM standard specifies or not the format of Error messages.
   This extension reuses Keystone error messages.
-* Some Keystone attributes (like User `description`) is not mapped to SCIM. It
-  could have been mapped to `displayName` (and it's pretty easy to be
-  implemented), but semantically does not seem to mean the same. So in case of
-  any doubt we have preferred to omit attributes without a clear translation.

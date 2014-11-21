@@ -1,6 +1,6 @@
 %define timestamp %(date +"%Y%m%d%H%M%S")
 Name: keystone-scim
-Version: 0.1.0
+Version: 0.2.0
 Release: %{timestamp}
 Summary: Keystone SCIM extension
 License: Copyright 2014 Telefonica Investigación y Desarrollo, S.A.U
@@ -84,10 +84,18 @@ fi
 
 if ! grep -q -F "identity:scim_get_service_provider_configs" "%{keystone_policy}"; then
   echo "Adding scim_get_service_provider_configs default policy."
-  sed -i "s/\"$/\",\n   \"identity:scim_get_service_provider_configs"\: \"\"/" \
+  sed -i "s/\"$/\",\n   \"identity:scim_get_service_provider_configs\"\: \"\"/" \
     %{keystone_policy}
 else
   echo "Already defined scim_get_service_provider_configs. Skipping."
+fi
+
+if ! grep -q -F "identity:scim_get_schemas "%{keystone_policy}"; then
+  echo "Adding scim_get_schemas default policy."
+  sed -i "s/\"$/\",\n   \"identity:scim_get_schemas\"\: \"\"/" \
+    %{keystone_policy}
+else
+  echo "Already defined scim_get_schemas. Skipping."
 fi
 
 echo "SCIM extension installed successfully. Restart Keystone daemon to take effect."

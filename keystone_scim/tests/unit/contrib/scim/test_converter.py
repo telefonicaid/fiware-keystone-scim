@@ -1,3 +1,23 @@
+#
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 """Unit tests for SCIM converter."""
 
 from keystone import tests
@@ -11,6 +31,7 @@ class TestUserScimConverter(tests.BaseTestCase):
                         'urn:scim:schemas:extension:keystone:1.0'],
             'id': '19041ee7679649879ada04417753ad4d',
             'userName': 'alice',
+            'displayName': 'Alice Smith',
             'emails': [
                 {
                     'value': 'alice@mailhost.com'
@@ -28,6 +49,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
             'email': 'alice@mailhost.com',
             'name': 'alice',
+            'description': 'Alice Smith',
             'password': 's0m3p4ssw0rd',
             'enabled': True
         }
@@ -57,6 +79,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
             'email': 'alice@mailhost.com',
             'name': 'alice',
+            'description': 'Alice Smith',
             'enabled': True
         }
 
@@ -65,6 +88,7 @@ class TestUserScimConverter(tests.BaseTestCase):
                         'urn:scim:schemas:extension:keystone:1.0'],
             'id': '19041ee7679649879ada04417753ad4d',
             'userName': 'alice',
+            'displayName': 'Alice Smith',
             'emails': [
                 {
                     'value': 'alice@mailhost.com'

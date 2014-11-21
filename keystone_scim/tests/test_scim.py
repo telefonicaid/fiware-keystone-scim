@@ -1,3 +1,23 @@
+#
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 import uuid
 
 from keystone import config
@@ -18,11 +38,6 @@ class BaseCRUDTests(object):
 
     EXTENSION_NAME = 'scim'
     EXTENSION_TO_ADD = 'scim_extension'
-
-#    def setUp(self):
-#        super(BaseCRUDTests, self).setUp()
-#        self.base_url = 'http://localhost/v3'
-#        self.controller = controllers.ScimUserV3Controller()
 
     def build_entity(self, *args, **kwarws):
         raise NotImplementedError
@@ -61,6 +76,19 @@ class BaseCRUDTests(object):
         expected_entity = self.proto_entity(name, self.domain_id,
             ref_id=matching_listed[0]['id'], remove=['schemas'])
         self.assertEqual(expected_entity, matching_listed[0])
+
+    def test_list_pagination(self):
+        entities = []
+        for i in range(0, 3):
+            name = uuid.uuid4().hex
+            entities.append(self.build_entity(name, self.domain_id))
+            self.post(self.URL, body=entities[i])
+
+        count = 2
+        URL = ('%(base)s?domain_id=%(domain_id)s&count=%(count)s' %
+               {'base': self.URL, 'domain_id': self.domain_id, 'count': count})
+        res_entities = self.get(URL).result
+        self.assertEqual(count, len(res_entities['Resources']))
 
     def test_get(self):
         name = uuid.uuid4().hex
