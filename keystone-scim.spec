@@ -1,6 +1,6 @@
 %define timestamp %(date +"%Y%m%d%H%M%S")
 Name: keystone-scim
-Version: 0.2.0
+Version: 0.2.1
 Release: %{timestamp}
 Summary: Keystone SCIM extension
 License: Copyright 2014 Telefonica Investigación y Desarrollo, S.A.U
