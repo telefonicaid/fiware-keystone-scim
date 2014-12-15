@@ -28,6 +28,12 @@ relational integrity is not maintained. And that's true, but in this way the
 database schema is not modified and thus the Keystone Roles API can interact
 with SCIM Roles _out-of-the-box_.
 
+This document specifies the SCIM API, but do not attemp to describe Keystone,
+as it is already specified by OpenStack. For information regarding obtaining
+token for use Keystone API, management of Keystone resources (Domains,
+Projects, Users, Groups, Roles, Role assigment) please refer to [Keystone
+official documentation](https://github.com/openstack/identity-api/tree/master/v3/src/markdown).
+
 # Group Users
 
 ## Users Collection [/v3/OS-SCIM/Users{?domain_id}{?count}{?startIndex}]
