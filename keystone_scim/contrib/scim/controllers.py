@@ -27,6 +27,7 @@ from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
 from keystone.openstack.common import log
+from keystone.openstack.common import versionutils
 import converter as conv
 import schemas
 
@@ -75,9 +76,14 @@ class ScimUserV3Controller(UserV3):
     @controller.filterprotected('domain_id', 'enabled', 'name')
     def list_users(self, context, filters):
         hints = pagination(context, UserV3.build_driver_hints(context, filters))
-        refs = self.identity_api.list_users(
-            domain_scope=self._get_domain_id_for_request(context),
-            hints=hints)
+        if 'J' in versionutils.deprecated._RELEASES:
+            refs = self.identity_api.list_users(
+                domain_scope=self._get_domain_id_for_list_request(context),
+                hints=hints)
+        else:
+            refs = self.identity_api.list_users(
+                domain_scope=self._get_domain_id_for_request(context),
+                hints=hints)
         return conv.listusers_key2scim(refs)
 
     def get_user(self, context, user_id):
@@ -177,9 +183,14 @@ class ScimGroupV3Controller(GroupV3):
     @controller.filterprotected('domain_id', 'name')
     def list_groups(self, context, filters):
         hints = pagination(context, GroupV3.build_driver_hints(context, filters))
-        refs = self.identity_api.list_groups(
-            domain_scope=self._get_domain_id_for_request(context),
-            hints=hints)
+        if 'J' in versionutils.deprecated._RELEASES:
+            refs = self.identity_api.list_groups(
+                domain_scope=self._get_domain_id_for_list_request(context),
+                hints=hints)
+        else:
+            refs = self.identity_api.list_groups(
+                domain_scope=self._get_domain_id_for_request(context),
+                hints=hints)
         return conv.listgroups_key2scim(refs)
 
     def get_group(self, context, group_id):
@@ -207,7 +218,6 @@ class ScimGroupV3Controller(GroupV3):
     def delete_group(self, context, group_id):
         return super(ScimGroupV3Controller, self).delete_group(
             context, group_id=group_id)
-
     def _denormalize(self, data):
         data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
             'urn_scim_schemas_extension_keystone_1.0', {})
