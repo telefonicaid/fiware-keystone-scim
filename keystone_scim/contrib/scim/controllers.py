@@ -164,7 +164,6 @@ class ScimRoleV3Controller(controller.V3Controller):
     def scim_put_role(self, context, role_id, **role):
         return self.scim_patch_role(context, role_id, **role)
 
-    @controller.protected()
     def scim_delete_role(self, context, role_id):
         self.assignment_api.delete_role(role_id)
 
