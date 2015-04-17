@@ -50,6 +50,16 @@ def pagination(context, hints=None):
         pass
     return hints
 
+def get_scim_page_info(context, hints):
+    page_info = {
+        "totalResults": hints.scim_total,
+    }
+    if ('startIndex' in context['query_string']):
+        page_info["startIndex"] = hints.scim_offset
+    if ('count' in context['query_string']):
+        page_info["itemsPerPage"] = hints.scim_limit
+    return page_info
+
 
 class ScimInfoController(wsgi.Application):
 
@@ -84,7 +94,8 @@ class ScimUserV3Controller(UserV3):
             refs = self.identity_api.list_users(
                 domain_scope=self._get_domain_id_for_request(context),
                 hints=hints)
-        return conv.listusers_key2scim(refs)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listusers_key2scim(refs, scim_page_info)
 
     def get_user(self, context, user_id):
         ref = super(ScimUserV3Controller, self).get_user(
@@ -138,7 +149,8 @@ class ScimRoleV3Controller(controller.V3Controller):
         except KeyError:
             pass
         refs = self.assignment_api.list_roles(hints=pagination(context, hints))
-        return conv.listroles_key2scim(refs)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listroles_key2scim(refs, scim_page_info)
 
     @controller.protected()
     def scim_create_role(self, context, **kwargs):
@@ -190,7 +202,8 @@ class ScimGroupV3Controller(GroupV3):
             refs = self.identity_api.list_groups(
                 domain_scope=self._get_domain_id_for_request(context),
                 hints=hints)
-        return conv.listgroups_key2scim(refs)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listgroups_key2scim(refs, scim_page_info)
 
     def get_group(self, context, group_id):
         ref = super(ScimGroupV3Controller, self).get_group(

@@ -44,6 +44,7 @@ extension.register_public_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
 def decorate_core_limit(f):
     def limit_scim_extenstion(query, hints):
         query = f(query, hints)
+        total = query.count()
         try:
             query = query.limit(hints.scim_limit)
         except AttributeError:
@@ -52,6 +53,7 @@ def decorate_core_limit(f):
             query = query.offset(hints.scim_offset)
         except AttributeError:
             pass
+        hints.scim_total = total
         return query
     return limit_scim_extenstion
 
