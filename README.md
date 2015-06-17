@@ -207,7 +207,7 @@ Response:
 
 ## Building and packaging
 
-In any OS (Linux, OSX) with a sane build environment (basically with `rpmbuild`
+In any Linux RPM based distribution (Centos, RH, etc) with a sane build environment (basically with `rpmbuild`
 installed), the RPM package can be built invoking the following command:
 
 ```
