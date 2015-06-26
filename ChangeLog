@@ -4,12 +4,12 @@ CHANGES
 v0.4.0
 ------
 
-* Add full SCIM pagination info data
+* Add full SCIM pagination info data (totalResults was missed)
 
 V0.3.0
 ------
 
-* FIX  delete_role_by_admin
+* FIX allow delete role by admin user
 * ADD support juno listing
 
 v0.2.1
