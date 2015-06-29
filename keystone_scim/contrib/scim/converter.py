@@ -60,12 +60,12 @@ def user_key2scim(ref, path, schema=True):
     return ref
 
 
-def listusers_key2scim(ref, page_info={}):
+def listusers_key2scim(ref, path, page_info={}):
     res = {
-        'schemas': [get_schema('urn:scim:schemas:core:%s', page_info['path']),
-                    get_schema(_EXT_SCHEMA, page_info['path'])],
+        'schemas': [get_schema('urn:scim:schemas:core:%s', path),
+                    get_schema(_EXT_SCHEMA, path)],
         'Resources': map(functools.partial(user_key2scim, schema=False,
-                                           path=page_info['path']), ref)
+                                           path=path), ref)
     }
     res.update(page_info)
     return res
@@ -75,7 +75,7 @@ def listusers_key2scim(ref, page_info={}):
 def user_scim2key(scim, path):
     return {
         'domain_id': scim.get(get_schema(_EXT_SCHEMA, path), {})
-        .get('domain_id', None),
+            .get('domain_id', None),
         'email': scim.get('emails', [{}])[0].get('value', None),
         'id': scim.get('id', None),
         'enabled': scim.get('active', None),
@@ -94,6 +94,7 @@ def role_scim2key(scim):
             scim.get('domain_id'), ROLE_SEP, scim.get('name', None))
     else:
         keystone['name'] = scim.get('name', None)
+
     return keystone
 
 
@@ -114,11 +115,11 @@ def role_key2scim(ref, path=DEFAULT_VERSION, schema=True):
     return scim
 
 
-def listroles_key2scim(ref, page_info={}):
+def listroles_key2scim(ref, path, page_info={}):
     res = {
-        'schemas': [get_schema(_EXT_SCHEMA, page_info['path'])],
+        'schemas': [get_schema(_EXT_SCHEMA, path)],
         'Resources': map(functools.partial(role_key2scim, schema=False,
-                                           path=page_info['path']), ref)
+                                           path=path), ref)
     }
     res.update(page_info)
     return res
@@ -128,7 +129,7 @@ def listroles_key2scim(ref, page_info={}):
 def group_scim2key(scim, path):
     return {
         'domain_id': scim.get(get_schema(_EXT_SCHEMA, path), {})
-        .get('domain_id', None),
+            .get('domain_id', None),
         'id': scim.get('id', None),
         'name': scim.get('displayName', None)
     }
@@ -148,12 +149,12 @@ def group_key2scim(ref, path, schema=True):
     }
 
 
-def listgroups_key2scim(ref, page_info={}):
+def listgroups_key2scim(ref, path, page_info={}):
     res = {
-        'schemas': [get_schema('urn:scim:schemas:core:%s', page_info['path']),
-                    get_schema(_EXT_SCHEMA, page_info['path'])],
+        'schemas': [get_schema('urn:scim:schemas:core:%s', path),
+                    get_schema(_EXT_SCHEMA, path)],
         'Resources': map(functools.partial(group_key2scim, schema=False,
-                                           path=page_info['path']), ref)
+                                           path=path), ref)
     }
     res.update(page_info)
     return res
@@ -176,12 +177,12 @@ def organization_key2scim(ref, path, schema=True):
     }
 
 
-def listorganizations_key2scim(ref, page_info={}):
+def listorganizations_key2scim(ref, path, page_info={}):
     res = {
-        'schemas': [get_schema('urn:scim:schemas:core:%s', page_info['path']),
-                    get_schema(_EXT_SCHEMA, page_info['path'])],
+        'schemas': [get_schema('urn:scim:schemas:core:%s', path),
+                    get_schema(_EXT_SCHEMA, path)],
         'Resources': map(functools.partial(organization_key2scim, schema=False,
-                                           path=page_info['path']), ref)
+                                           path=path), ref)
     }
     res.update(page_info)
     return res
@@ -191,7 +192,7 @@ def listorganizations_key2scim(ref, page_info={}):
 def organization_scim2key(scim, path):
     return {
         'domain_id': scim.get(get_schema(_EXT_SCHEMA, path), {})
-        .get('domain_id', None),
+            .get('domain_id', None),
         'id': scim.get('id', None),
         'enabled': scim.get('active', None),
         'name': scim.get('name', None),

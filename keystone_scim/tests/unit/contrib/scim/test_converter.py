@@ -104,9 +104,7 @@ class TestUserScimConverter(tests.BaseTestCase):
         self.assertEqual(scim, conv.user_key2scim(keystone, path='v1'))
 
     def test_listusers_key2scim(self):
-        page_info = {
-            'path': 'v1'
-        }
+        path = 'v1'
         keystone = [{
             'id': '19041ee7679649879ada04417753ad4d',
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
@@ -116,7 +114,6 @@ class TestUserScimConverter(tests.BaseTestCase):
         }]
 
         scim = {
-            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:core:1.0',
                         'urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
@@ -135,7 +132,7 @@ class TestUserScimConverter(tests.BaseTestCase):
         }
 
 
-        self.assertEqual(scim, conv.listusers_key2scim(keystone, page_info))
+        self.assertEqual(scim, conv.listusers_key2scim(keystone, path=path))
 
     def test_user_key2scim_no_mandatory_fields(self):
         keystone = {
@@ -225,9 +222,7 @@ class TestRoleScimConverter(tests.BaseTestCase):
         self.assertEqual(scim, conv.role_key2scim(keystone, path='v1'))
 
     def test_listroles_key2scim(self):
-        page_info = {
-            'path': 'v1'
-        }
+        path = 'v1'
         keystone = [{
                         'id': '19041ee7679649879ada04417753ad4d',
                         'name': '%s%s%s' % ('91d79dc2211d43a7985ebc27cdd146df',
@@ -235,7 +230,6 @@ class TestRoleScimConverter(tests.BaseTestCase):
                     }]
 
         scim = {
-            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
                               'id': '19041ee7679649879ada04417753ad4d',
@@ -243,7 +237,7 @@ class TestRoleScimConverter(tests.BaseTestCase):
                               'name': 'aRole'
                           }]
         }
-        self.assertEqual(scim, conv.listroles_key2scim(keystone, page_info))
+        self.assertEqual(scim, conv.listroles_key2scim(keystone, path=path))
 
 
 class TestGroupScimConverter(tests.BaseTestCase):
@@ -288,9 +282,7 @@ class TestGroupScimConverter(tests.BaseTestCase):
         self.assertEqual(scim, conv.group_key2scim(keystone, path='v1'))
 
     def test_listgroups_key2scim(self):
-        page_info = {
-            'path': 'v1'
-        }
+        path = 'v1'
         keystone = [{
                         'id': '19041ee7679649879ada04417753ad4d',
                         'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
@@ -298,7 +290,6 @@ class TestGroupScimConverter(tests.BaseTestCase):
         }]
 
         scim = {
-            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:core:1.0',
                         'urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
@@ -309,7 +300,7 @@ class TestGroupScimConverter(tests.BaseTestCase):
                               }
                           }]
         }
-        self.assertEqual(scim, conv.listgroups_key2scim(keystone, page_info))
+        self.assertEqual(scim, conv.listgroups_key2scim(keystone, path=path))
 
 
 class TestOrganizationScimConverter(tests.BaseTestCase):
@@ -383,9 +374,7 @@ class TestOrganizationScimConverter(tests.BaseTestCase):
         self.assertEqual(scim, conv.organization_key2scim(keystone, path='v2'))
 
     def test_listorganizations_key2scim(self):
-        page_info = {
-            'path': 'v2'
-        }
+        path = 'v2'
         keystone = [{
             'id': '19041ee7679649879ada04417753ad4d',
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
@@ -396,7 +385,6 @@ class TestOrganizationScimConverter(tests.BaseTestCase):
         }]
 
         scim = {
-            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:core:2.0',
                         'urn:scim:schemas:extension:keystone:2.0'],
             'Resources': [{
@@ -410,7 +398,7 @@ class TestOrganizationScimConverter(tests.BaseTestCase):
                 }
             }]
         }
-        self.assertEqual(scim, conv.listorganizations_key2scim(keystone, page_info))
+        self.assertEqual(scim, conv.listorganizations_key2scim(keystone, path=path))
 
     def test_organization_key2scim_no_mandatory_fields(self):
         keystone = {

@@ -64,7 +64,7 @@ class BaseCRUDTests(object):
     def test_list(self):
         name = uuid.uuid4().hex
         entity = self.build_entity(name, self.domain_id)
-        res = self.post(self.URL, body=entity)
+        res=self.post(self.URL, body=entity)
 
         URL = ('%(base)s?domain_id=%(domain_id)s' %
                {'base': self.URL, 'domain_id': self.domain_id})
