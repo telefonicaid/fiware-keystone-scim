@@ -23,6 +23,7 @@
 from keystone import tests
 import keystone_scim.contrib.scim.converter as conv
 
+
 class TestUserScimConverter(tests.BaseTestCase):
 
     def test_user_scim2keystone(self):
@@ -54,7 +55,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'enabled': True
         }
 
-        self.assertEqual(keystone, conv.user_scim2key(scim))
+        self.assertEqual(keystone, conv.user_scim2key(scim, path='v1'))
 
     def test_user_scim2keystone_no_mandatory_fields(self):
         scim = {
@@ -71,7 +72,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'name': 'alice',
         }
 
-        self.assertEqual(keystone, conv.user_scim2key(scim))
+        self.assertEqual(keystone, conv.user_scim2key(scim, path='v1'))
 
     def test_user_key2scim(self):
         keystone = {
@@ -100,9 +101,12 @@ class TestUserScimConverter(tests.BaseTestCase):
             }
         }
 
-        self.assertEqual(scim, conv.user_key2scim(keystone))
+        self.assertEqual(scim, conv.user_key2scim(keystone, path='v1'))
 
     def test_listusers_key2scim(self):
+        page_info = {
+            'path': 'v1'
+        }
         keystone = [{
             'id': '19041ee7679649879ada04417753ad4d',
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
@@ -112,6 +116,7 @@ class TestUserScimConverter(tests.BaseTestCase):
         }]
 
         scim = {
+            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:core:1.0',
                         'urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
@@ -129,7 +134,8 @@ class TestUserScimConverter(tests.BaseTestCase):
             }]
         }
 
-        self.assertEqual(scim, conv.listusers_key2scim(keystone))
+
+        self.assertEqual(scim, conv.listusers_key2scim(keystone, page_info))
 
     def test_user_key2scim_no_mandatory_fields(self):
         keystone = {
@@ -146,7 +152,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             }
         }
 
-        self.assertEqual(scim, conv.user_key2scim(keystone))
+        self.assertEqual(scim, conv.user_key2scim(keystone, path='v1'))
 
 
     def test_user_scim2key_utf8(self):
@@ -169,7 +175,7 @@ class TestUserScimConverter(tests.BaseTestCase):
             'enabled': True
         }
 
-        self.assertEqual(scim, conv.user_key2scim(keystone))
+        self.assertEqual(scim, conv.user_key2scim(keystone, path='v1'))
 
 class TestRoleScimConverter(tests.BaseTestCase):
 
@@ -216,9 +222,12 @@ class TestRoleScimConverter(tests.BaseTestCase):
             'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
         }
 
-        self.assertEqual(scim, conv.role_key2scim(keystone))
+        self.assertEqual(scim, conv.role_key2scim(keystone, path='v1'))
 
     def test_listroles_key2scim(self):
+        page_info = {
+            'path': 'v1'
+        }
         keystone = [{
                         'id': '19041ee7679649879ada04417753ad4d',
                         'name': '%s%s%s' % ('91d79dc2211d43a7985ebc27cdd146df',
@@ -226,6 +235,7 @@ class TestRoleScimConverter(tests.BaseTestCase):
                     }]
 
         scim = {
+            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
                               'id': '19041ee7679649879ada04417753ad4d',
@@ -233,8 +243,8 @@ class TestRoleScimConverter(tests.BaseTestCase):
                               'name': 'aRole'
                           }]
         }
+        self.assertEqual(scim, conv.listroles_key2scim(keystone, page_info))
 
-        self.assertEqual(scim, conv.listroles_key2scim(keystone))
 
 class TestGroupScimConverter(tests.BaseTestCase):
 
@@ -255,7 +265,7 @@ class TestGroupScimConverter(tests.BaseTestCase):
             'name': 'someGroupName'
         }
 
-        self.assertEqual(keystone, conv.group_scim2key(scim))
+        self.assertEqual(keystone, conv.group_scim2key(scim, path='v1'))
 
 
     def test_group_key2scim(self):
@@ -275,9 +285,12 @@ class TestGroupScimConverter(tests.BaseTestCase):
             }
         }
 
-        self.assertEqual(scim, conv.group_key2scim(keystone))
+        self.assertEqual(scim, conv.group_key2scim(keystone, path='v1'))
 
     def test_listgroups_key2scim(self):
+        page_info = {
+            'path': 'v1'
+        }
         keystone = [{
                         'id': '19041ee7679649879ada04417753ad4d',
                         'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
@@ -285,6 +298,7 @@ class TestGroupScimConverter(tests.BaseTestCase):
         }]
 
         scim = {
+            'path': page_info['path'],
             'schemas': ['urn:scim:schemas:core:1.0',
                         'urn:scim:schemas:extension:keystone:1.0'],
             'Resources': [{
@@ -295,6 +309,146 @@ class TestGroupScimConverter(tests.BaseTestCase):
                               }
                           }]
         }
+        self.assertEqual(scim, conv.listgroups_key2scim(keystone, page_info))
 
-        self.assertEqual(scim, conv.listgroups_key2scim(keystone))
 
+class TestOrganizationScimConverter(tests.BaseTestCase):
+
+    def test_organization_scim2keystone(self):
+
+        scim = {
+            'schemas': ['urn:scim:schemas:core:2.0',
+                        'urn:scim:schemas:extension:keystone:2.0'],
+            'id': '19041ee7679649879ada04417753ad4d',
+            'name': 'aliceOrg',
+            'description': 'Alice Smith Organization',
+            'active': True,
+            'is_default': True,
+            'urn:scim:schemas:extension:keystone:2.0': {
+                'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
+            }
+        }
+
+        keystone = {
+            'id': '19041ee7679649879ada04417753ad4d',
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+            'name': 'aliceOrg',
+            'description': 'Alice Smith Organization',
+            'is_default': True,
+            'enabled': True,
+        }
+
+        self.assertEqual(keystone, conv.organization_scim2key(scim, path='v2'))
+
+    def test_organization_scim2keystone_no_mandatory_fields(self):
+        scim = {
+            'schemas': ['urn:scim:schemas:core:2.0',
+                        'urn:scim:schemas:extension:keystone:2.0'],
+            'name': 'alice org',
+            'urn:scim:schemas:extension:keystone:2.0': {
+                'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
+            }
+        }
+
+        keystone = {
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+            'name': 'alice org',
+        }
+
+        self.assertEqual(keystone, conv.organization_scim2key(scim, path='v2'))
+
+    def test_organization_key2scim(self):
+        keystone = {
+            'id': '19041ee7679649879ada04417753ad4d',
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+            'name': 'aliceOrg',
+            'description': 'Alice Smith Organization',
+            'enabled': True,
+            'is_default': True
+        }
+
+        scim = {
+            'schemas': ['urn:scim:schemas:core:2.0',
+                        'urn:scim:schemas:extension:keystone:2.0'],
+            'id': '19041ee7679649879ada04417753ad4d',
+            'name': 'aliceOrg',
+            'description': 'Alice Smith Organization',
+            'active': True,
+            'is_default': True,
+            'urn:scim:schemas:extension:keystone:2.0': {
+                'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
+            }
+        }
+
+        self.assertEqual(scim, conv.organization_key2scim(keystone, path='v2'))
+
+    def test_listorganizations_key2scim(self):
+        page_info = {
+            'path': 'v2'
+        }
+        keystone = [{
+            'id': '19041ee7679649879ada04417753ad4d',
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+            'description': 'Alice Organization',
+            'name': 'aliceOrg',
+            'enabled': True,
+            'is_default': True
+        }]
+
+        scim = {
+            'path': page_info['path'],
+            'schemas': ['urn:scim:schemas:core:2.0',
+                        'urn:scim:schemas:extension:keystone:2.0'],
+            'Resources': [{
+                'id': '19041ee7679649879ada04417753ad4d',
+                'name': 'aliceOrg',
+                'description': 'Alice Organization',
+                'active': True,
+                'is_default': True,
+                'urn:scim:schemas:extension:keystone:2.0': {
+                    'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
+                }
+            }]
+        }
+        self.assertEqual(scim, conv.listorganizations_key2scim(keystone, page_info))
+
+    def test_organization_key2scim_no_mandatory_fields(self):
+        keystone = {
+            'id': '19041ee7679649879ada04417753ad4d',
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+        }
+
+        scim = {
+            'schemas': ['urn:scim:schemas:core:2.0',
+                        'urn:scim:schemas:extension:keystone:2.0'],
+            'id': '19041ee7679649879ada04417753ad4d',
+            'urn:scim:schemas:extension:keystone:2.0': {
+                'domain_id': '91d79dc2211d43a7985ebc27cdd146df'
+            }
+        }
+
+        self.assertEqual(scim, conv.organization_key2scim(keystone, path='v2'))
+
+    def test_organization_scim2key_utf8(self):
+        scim = {
+            'name': u'alice',
+            'urn:scim:schemas:extension:keystone:2.0': {
+                u'domain_id': u'91d79dc2211d43a7985ebc27cdd146df'
+            },
+            'description': u'alice org',
+            'active': True,
+            'is_default': True,
+            'id': u'19041ee7679649879ada04417753ad4d',
+            'schemas': [u'urn:scim:schemas:core:2.0',
+                        u'urn:scim:schemas:extension:keystone:2.0']}
+
+        keystone = {
+            'id': '19041ee7679649879ada04417753ad4d',
+            'domain_id': '91d79dc2211d43a7985ebc27cdd146df',
+            'description': 'alice org',
+            'name': 'alice',
+            'enabled': True,
+            'is_default': True
+        }
+
+        self.assertEqual(scim, conv.organization_key2scim(keystone, path='v2'))
