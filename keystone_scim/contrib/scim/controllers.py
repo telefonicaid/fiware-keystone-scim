@@ -26,6 +26,7 @@ from keystone.common import dependency
 from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
+from keystone.assignment.controllers import ProjectV3
 from keystone.openstack.common import log
 from keystone.openstack.common import versionutils
 import converter as conv
@@ -50,9 +51,10 @@ def pagination(context, hints=None):
         pass
     return hints
 
+
 def get_scim_page_info(context, hints):
     page_info = {
-        "totalResults": hints.scim_total,
+        "totalResults": hints.scim_total
     }
     if ('startIndex' in context['query_string']):
         page_info["startIndex"] = hints.scim_offset
@@ -61,14 +63,68 @@ def get_scim_page_info(context, hints):
     return page_info
 
 
+def get_path(path):
+    if 'v2' in path:
+        path = '2.0'
+    elif 'v1' in path:
+        path = '1.0'
+    return path
+
+
+@dependency.requires('assignment_api', 'identity_api')
 class ScimInfoController(wsgi.Application):
 
     def __init__(self):
         super(ScimInfoController, self).__init__()
 
+    def role_of(self, role_id):
+        role = self.assignment_api.get_role(role_id)
+        return role['name']
+
+    def get_roles(self):
+        role_user = self.assignment_api.list_role_assignments()
+        basic = [u['user_id'] for u in role_user if self.role_of(u['role_id'])
+                 in 'basic']
+        trial = [u['user_id'] for u in role_user if self.role_of(u['role_id'])
+                 in 'trial']
+        community = [u['user_id'] for u in role_user
+                     if self.role_of(u['role_id']) in 'community']
+        basic = len(basic)
+        trial = len(trial)
+        community = len(community)
+        return basic, trial, community
+
+    def get_count(self):
+        orgs = self.assignment_api.list_projects()
+        users = self.identity_api.list_users()
+        cloud_projects = [getattr(user, 'cloud_project_id', None)
+                          for user in users]
+        filtered_orgs = [i for i in orgs if not getattr(i, 'is_default', False)
+                         and i.get('id') not in cloud_projects]
+        orgs_len = len(filtered_orgs)
+        cloud_len = len(cloud_projects)
+        users_len = len(users)
+        return orgs_len, cloud_len, users_len
+
+    def edit_schema(self, path, schema):
+        orgs, cloud, users = self.get_count()
+        basic, trial, community = self.get_roles()
+        schema['schemas'] = ["urn:scim:schemas:core:%s:ServiceProviderConfig"
+                             % path]
+        schema['information']['totalUsers'] = users
+        schema['information']['totalUserOrganizations'] = orgs
+        schema['information']['totalCloudOrganizations'] = cloud
+        schema['information']['totalResources'] = users + orgs + cloud
+        schema['information']['trialUsers'] = trial
+        schema['information']['basicUsers'] = basic
+        schema['information']['communityUsers'] = community
+        return schema
+
     @controller.protected()
     def scim_get_service_provider_configs(self, context):
-        return schemas.SERVICE_PROVIDER_CONFIGS
+        path = get_path(context['path'])
+        schema = schemas.SERVICE_PROVIDER_CONFIGS
+        return self.edit_schema(path, schema)
 
     @controller.protected()
     def scim_get_schemas(self, context):
@@ -95,25 +151,25 @@ class ScimUserV3Controller(UserV3):
                 domain_scope=self._get_domain_id_for_request(context),
                 hints=hints)
         scim_page_info = get_scim_page_info(context, hints)
-        return conv.listusers_key2scim(refs, scim_page_info)
+        return conv.listusers_key2scim(refs, context['path'], scim_page_info)
 
     def get_user(self, context, user_id):
         ref = super(ScimUserV3Controller, self).get_user(
             context, user_id=user_id)
-        return conv.user_key2scim(ref['user'])
+        return conv.user_key2scim(ref['user'], path=context['path'])
 
     def create_user(self, context, **kwargs):
-        scim = self._denormalize(kwargs)
-        user = conv.user_scim2key(scim)
+        scim = self._denormalize(kwargs, context['path'])
+        user = conv.user_scim2key(scim, path=context['path'])
         ref = super(ScimUserV3Controller, self).create_user(context, user=user)
-        return conv.user_key2scim(ref.get('user', None))
+        return conv.user_key2scim(ref.get('user', None), path=context['path'])
 
     def patch_user(self, context, user_id, **kwargs):
-        scim = self._denormalize(kwargs)
-        user = conv.user_scim2key(scim)
+        scim = self._denormalize(kwargs, context['path'])
+        user = conv.user_scim2key(scim, path=context['path'])
         ref = super(ScimUserV3Controller, self).update_user(
             context, user_id=user_id, user=user)
-        return conv.user_key2scim(ref.get('user', None))
+        return conv.user_key2scim(ref.get('user', None), path=context['path'])
 
     def put_user(self, context, user_id, **kwargs):
         return self.patch_user(context, user_id, **kwargs)
@@ -122,9 +178,10 @@ class ScimUserV3Controller(UserV3):
         return super(ScimUserV3Controller, self).delete_user(
             context, user_id=user_id)
 
-    def _denormalize(self, data):
-        data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
-            'urn_scim_schemas_extension_keystone_1.0', {})
+    def _denormalize(self, data, path):
+        path = get_path(path)
+        data['urn:scim:schemas:extension:keystone:%s' % path] = data.pop(
+            'urn_scim_schemas_extension_keystone_%s' % path, {})
         return data
 
 
@@ -150,7 +207,7 @@ class ScimRoleV3Controller(controller.V3Controller):
             pass
         refs = self.assignment_api.list_roles(hints=pagination(context, hints))
         scim_page_info = get_scim_page_info(context, hints)
-        return conv.listroles_key2scim(refs, scim_page_info)
+        return conv.listroles_key2scim(refs, context['path'], scim_page_info)
 
     @controller.protected()
     def scim_create_role(self, context, **kwargs):
@@ -158,12 +215,12 @@ class ScimRoleV3Controller(controller.V3Controller):
         key_role = conv.role_scim2key(kwargs)
         ref = self._assign_unique_id(key_role)
         created_ref = self.assignment_api.create_role(ref['id'], ref)
-        return conv.role_key2scim(created_ref)
+        return conv.role_key2scim(created_ref, path=context['path'])
 
     @controller.protected()
     def scim_get_role(self, context, role_id):
         ref = self.assignment_api.get_role(role_id)
-        return conv.role_key2scim(ref)
+        return conv.role_key2scim(ref, path=context['path'])
 
     @controller.protected()
     def scim_patch_role(self, context, role_id, **role):
@@ -171,7 +228,7 @@ class ScimRoleV3Controller(controller.V3Controller):
         self._require_matching_id(role_id, key_role)
         self._require_matching_domain_id(role_id, role, self.load_role)
         ref = self.assignment_api.update_role(role_id, key_role)
-        return conv.role_key2scim(ref)
+        return conv.role_key2scim(ref, path=context['path'])
 
     def scim_put_role(self, context, role_id, **role):
         return self.scim_patch_role(context, role_id, **role)
@@ -203,26 +260,26 @@ class ScimGroupV3Controller(GroupV3):
                 domain_scope=self._get_domain_id_for_request(context),
                 hints=hints)
         scim_page_info = get_scim_page_info(context, hints)
-        return conv.listgroups_key2scim(refs, scim_page_info)
+        return conv.listgroups_key2scim(refs, context['path'], scim_page_info)
 
     def get_group(self, context, group_id):
         ref = super(ScimGroupV3Controller, self).get_group(
             context, group_id=group_id)
-        return conv.group_key2scim(ref['group'])
+        return conv.group_key2scim(ref['group'], path=context['path'])
 
     def create_group(self, context, **kwargs):
-        scim = self._denormalize(kwargs)
-        group = conv.group_scim2key(scim)
+        scim = self._denormalize(kwargs, context['path'])
+        group = conv.group_scim2key(scim, path=context['path'])
         ref = super(ScimGroupV3Controller, self).create_group(
             context, group=group)
-        return conv.group_key2scim(ref.get('group', None))
+        return conv.group_key2scim(ref.get('group', None), path=context['path'])
 
     def patch_group(self, context, group_id, **kwargs):
-        scim = self._denormalize(kwargs)
-        group = conv.group_scim2key(scim)
+        scim = self._denormalize(kwargs, context['path'])
+        group = conv.group_scim2key(scim, context['path'])
         ref = super(ScimGroupV3Controller, self).update_group(
             context, group_id=group_id, group=group)
-        return conv.group_key2scim(ref.get('group', None))
+        return conv.group_key2scim(ref.get('group', None), path=context['path'])
 
     def put_group(self, context, group_id, **kwargs):
         return self.patch_group(context, group_id, **kwargs)
@@ -230,7 +287,56 @@ class ScimGroupV3Controller(GroupV3):
     def delete_group(self, context, group_id):
         return super(ScimGroupV3Controller, self).delete_group(
             context, group_id=group_id)
-    def _denormalize(self, data):
-        data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
-            'urn_scim_schemas_extension_keystone_1.0', {})
+    def _denormalize(self, data, path):
+        path = get_path(path)
+        data['urn:scim:schemas:extension:keystone:%s' % path] = data.pop(
+            'urn_scim_schemas_extension_keystone_%s' % path, {})
+        return data
+
+
+class ScimOrganizationV3Controller(ProjectV3):
+
+    collection_name = 'organizations'
+    member_name = 'organization'
+
+    def __init__(self):
+        super(ScimOrganizationV3Controller, self).__init__()
+
+    @controller.filterprotected('domain_id', 'enabled', 'name')
+    def list_organizations(self, context, filters):
+        hints = pagination(context, ProjectV3.build_driver_hints(context, filters))
+        refs = self.assignment_api.list_projects(hints=pagination(context, hints))
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listorganizations_key2scim(refs, context['path'], scim_page_info)
+
+    def get_organization(self, context, organization_id):
+        ref = super(ScimOrganizationV3Controller, self).get_project(
+            context, project_id=organization_id)
+        return conv.organization_key2scim(ref['project'], path=context['path'])
+
+    def create_organization(self, context, **kwargs):
+        scim = self._denormalize(kwargs, context['path'])
+        organization = conv.organization_scim2key(scim, path=context['path'])
+        ref = super(ScimOrganizationV3Controller, self).create_project(
+            context, project=organization)
+        return conv.organization_key2scim(ref.get('project', None), path=context['path'])
+
+    def patch_organization(self, context, organization_id, **kwargs):
+        scim = self._denormalize(kwargs, context['path'])
+        organization = conv.organization_scim2key(scim, path=context['path'])
+        ref = super(ScimOrganizationV3Controller, self).update_project(
+            context, project_id=organization_id, project=organization)
+        return conv.organization_key2scim(ref.get('project', None), path=context['path'])
+
+    def put_organization(self, context, organization_id, **kwargs):
+        return self.patch_organization(context, organization_id, **kwargs)
+
+    def delete_organization(self, context, organization_id):
+        return super(ScimOrganizationV3Controller, self).delete_project(
+            context, project_id=organization_id)
+
+    def _denormalize(self, data, path):
+        path = get_path(path)
+        data['urn:scim:schemas:extension:keystone:%s' % path] = data.pop(
+            'urn_scim_schemas_extension_keystone_%s' % path, {})
         return data

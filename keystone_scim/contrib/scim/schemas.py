@@ -23,9 +23,19 @@
 import sys
 
 SERVICE_PROVIDER_CONFIGS = {
+    "schemas": "",
     'documentationUrl': 'https://github.com/telefonicaid/fiware-keystone-scim/blob/master/README.md',
     'patch': {
         'supported': True
+    },
+    'information': {
+        "totalUsers": "",
+        "totalUserOrganizations": "",
+        "totalCloudOrganizations": "",
+        "totalResources": "",
+        "trialUsers": "",
+        "basicUsers": "",
+        "communityUsers": ""
     },
     'bulk': {
         'supported': False,
@@ -245,5 +255,76 @@ SCHEMAS = [
                 "caseExact": True
             }
         ]
-    }
+    },
+    {
+        "id": "urn:scim:schemas:core:2.0:Organization",
+        "name": "Organization",
+        "description": "Keystone Organization",
+        "schema": "urn:scim:schemas:core:2.0",
+        "endpoint": "/Organization",
+        "attributes": [
+            {
+                "name": "id",
+                "type": "string",
+                "multiValued": False,
+                "description": "Unique identifier for the SCIM resource",
+                "schema": "urn:scim:schemas:core:2.0",
+                "readOnly": True,
+                "required": True,
+                "caseExact": True
+            },
+            {
+                "name": "name",
+                "type": "string",
+                "multiValued": False,
+                "description": "Organization name",
+                "schema": "urn:scim:schemas:core:2.0",
+                "readOnly": True,
+                "required": True,
+                "caseExact": True
+            },
+            {
+                "name": "description",
+                "type": "string",
+                "multiValued": False,
+                "description": "Organization description",
+                "schema": "urn:scim:schemas:core:2.0",
+                "readOnly": False,
+                "required": True,
+                "caseExact": True
+            },
+            {
+                "name": "active",
+                "type": "boolean",
+                "multiValued": False,
+                "description": "A Boolean value indicating the User's"
+                    "administrative status.",
+                "schema": "urn:scim:schemas:core:2.0",
+                "readOnly": False,
+                "required": False,
+                "caseExact": False
+            },
+            {
+                "name": "domain_id",
+                "type": "string",
+                "multiValued": False,
+                "description": "Organization's domain",
+                "schema": "urn:scim:schemas:extension:keystone:2.0",
+                "readOnly": False,
+                "required": True,
+                "caseExact": True
+            },
+            {
+                "name": "is_default",
+                "type": "boolean",
+                "multiValued": False,
+                "description": "A Boolean value indicating the Organization's"
+                    "default status",
+                "schema": "urn:scim:schemas:core:2.0",
+                "readOnly": False,
+                "required": False,
+                "caseExact": False
+            },
+        ]
+    },
 ]

@@ -100,7 +100,7 @@ and overview of how this extension should be used.
 Creating an User:
 
 ```sh
-curl http://<KEYSTONE>:5000/v3/OS-SCIM/Users \
+curl http://<KEYSTONE>:5000/v3/OS-SCIM/v1/Users \
     -s \
     -H "X-Auth-Token: <TOKEN>" \
     -H "Content-Type: application/json" \
@@ -150,7 +150,7 @@ Listing Users, filtering by `domain_id`:
 
 ```sh
 curl -s -X GET -H "X-Auth-Token: <TOKEN>" \
-http://<KEYSTONE>:5000/v3/OS-SCIM/Users?domain_id=<DOMAIN_ID>
+http://<KEYSTONE>:5000/v3/OS-SCIM/v1/Users?domain_id=<DOMAIN_ID>
 ```
 
 Response:
@@ -180,7 +180,7 @@ Listing supports pagination as defined by SCIM standard, using `count` and
 Creating Role:
 
 ```json
-curl http://<KEYSTONE>:5000/v3/OS-SCIM/Roles \
+curl http://<KEYSTONE>:5000/v3/OS-SCIM/v1/Roles \
     -s \
     -H "X-Auth-Token: <TOKEN>" \
     -H "Content-Type: application/json" \
@@ -262,7 +262,7 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 Test SCIM extension
 
 ```sh
-curl http://localhost:5000/v3/OS-SCIM/ServiceProviderConfigs \
+curl http://localhost:5000/v3/OS-SCIM/v1/ServiceProviderConfigs \
     -s \
     -H "X-Auth-Token: ADMIN"
 ```
