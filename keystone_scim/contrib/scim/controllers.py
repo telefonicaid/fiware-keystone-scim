@@ -26,8 +26,9 @@ from keystone.common import dependency
 from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
-from keystone.openstack.common import log
 from keystone.openstack.common import versionutils
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 import converter as conv
 import schemas
 
@@ -86,7 +87,8 @@ class ScimUserV3Controller(UserV3):
     @controller.filterprotected('domain_id', 'enabled', 'name')
     def list_users(self, context, filters):
         hints = pagination(context, UserV3.build_driver_hints(context, filters))
-        if 'J' in versionutils.deprecated._RELEASES:
+        if (('J' in versionutils.deprecated._RELEASES) or
+            ('K' in versionutils.deprecated._RELEASES)):
             refs = self.identity_api.list_users(
                 domain_scope=self._get_domain_id_for_list_request(context),
                 hints=hints)
