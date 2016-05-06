@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Packages Keystone SCIM extension as RPM
 #
