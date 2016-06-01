@@ -89,6 +89,8 @@ class BaseCRUDTests(object):
                {'base': self.URL, 'domain_id': self.domain_id, 'count': count})
         res_entities = self.get(URL).result
         self.assertEqual(count, len(res_entities['Resources']))
+        self.assertEqual(count, int(res_entities['itemsPerPage']))
+        self.assertTrue( count < int(res_entities['totalResults']) )
 
     def test_get(self):
         name = uuid.uuid4().hex

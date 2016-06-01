@@ -27,6 +27,7 @@ from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
 from keystone.openstack.common import log
+from keystone.openstack.common import versionutils
 import converter as conv
 import schemas
 
@@ -48,6 +49,16 @@ def pagination(context, hints=None):
     except KeyError:
         pass
     return hints
+
+def get_scim_page_info(context, hints):
+    page_info = {
+        "totalResults": hints.scim_total,
+    }
+    if ('startIndex' in context['query_string']):
+        page_info["startIndex"] = hints.scim_offset
+    if ('count' in context['query_string']):
+        page_info["itemsPerPage"] = hints.scim_limit
+    return page_info
 
 
 class ScimInfoController(wsgi.Application):
@@ -75,10 +86,16 @@ class ScimUserV3Controller(UserV3):
     @controller.filterprotected('domain_id', 'enabled', 'name')
     def list_users(self, context, filters):
         hints = pagination(context, UserV3.build_driver_hints(context, filters))
-        refs = self.identity_api.list_users(
-            domain_scope=self._get_domain_id_for_request(context),
-            hints=hints)
-        return conv.listusers_key2scim(refs)
+        if 'J' in versionutils.deprecated._RELEASES:
+            refs = self.identity_api.list_users(
+                domain_scope=self._get_domain_id_for_list_request(context),
+                hints=hints)
+        else:
+            refs = self.identity_api.list_users(
+                domain_scope=self._get_domain_id_for_request(context),
+                hints=hints)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listusers_key2scim(refs, scim_page_info)
 
     def get_user(self, context, user_id):
         ref = super(ScimUserV3Controller, self).get_user(
@@ -132,7 +149,8 @@ class ScimRoleV3Controller(controller.V3Controller):
         except KeyError:
             pass
         refs = self.assignment_api.list_roles(hints=pagination(context, hints))
-        return conv.listroles_key2scim(refs)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listroles_key2scim(refs, scim_page_info)
 
     @controller.protected()
     def scim_create_role(self, context, **kwargs):
@@ -158,7 +176,6 @@ class ScimRoleV3Controller(controller.V3Controller):
     def scim_put_role(self, context, role_id, **role):
         return self.scim_patch_role(context, role_id, **role)
 
-    @controller.protected()
     def scim_delete_role(self, context, role_id):
         self.assignment_api.delete_role(role_id)
 
@@ -177,10 +194,16 @@ class ScimGroupV3Controller(GroupV3):
     @controller.filterprotected('domain_id', 'name')
     def list_groups(self, context, filters):
         hints = pagination(context, GroupV3.build_driver_hints(context, filters))
-        refs = self.identity_api.list_groups(
-            domain_scope=self._get_domain_id_for_request(context),
-            hints=hints)
-        return conv.listgroups_key2scim(refs)
+        if 'J' in versionutils.deprecated._RELEASES:
+            refs = self.identity_api.list_groups(
+                domain_scope=self._get_domain_id_for_list_request(context),
+                hints=hints)
+        else:
+            refs = self.identity_api.list_groups(
+                domain_scope=self._get_domain_id_for_request(context),
+                hints=hints)
+        scim_page_info = get_scim_page_info(context, hints)
+        return conv.listgroups_key2scim(refs, scim_page_info)
 
     def get_group(self, context, group_id):
         ref = super(ScimGroupV3Controller, self).get_group(
@@ -207,7 +230,6 @@ class ScimGroupV3Controller(GroupV3):
     def delete_group(self, context, group_id):
         return super(ScimGroupV3Controller, self).delete_group(
             context, group_id=group_id)
-
     def _denormalize(self, data):
         data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
             'urn_scim_schemas_extension_keystone_1.0', {})

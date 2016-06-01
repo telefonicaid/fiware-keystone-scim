@@ -48,11 +48,13 @@ def user_key2scim(ref, schema=True):
     }
 
 
-def listusers_key2scim(ref):
-    return {
+def listusers_key2scim(ref, page_info={}):
+    res = {
         'schemas': ['urn:scim:schemas:core:1.0', _EXT_SCHEMA],
         'Resources': map(functools.partial(user_key2scim, schema=False), ref)
     }
+    res.update(page_info)
+    return res
 
 
 @_remove_dict_nones
@@ -99,11 +101,13 @@ def role_key2scim(ref, schema=True):
     return scim
 
 
-def listroles_key2scim(ref):
-    return {
+def listroles_key2scim(ref, page_info={}):
+    res = {
         'schemas': [_EXT_SCHEMA],
         'Resources': map(functools.partial(role_key2scim, schema=False), ref)
     }
+    res.update(page_info)
+    return res
 
 
 @_remove_dict_nones
@@ -128,8 +132,10 @@ def group_key2scim(ref, schema=True):
         }
     }
 
-def listgroups_key2scim(ref):
-    return {
+def listgroups_key2scim(ref, page_info={}):
+    res = {
         'schemas': ['urn:scim:schemas:core:1.0', _EXT_SCHEMA],
         'Resources': map(functools.partial(group_key2scim, schema=False), ref)
     }
+    res.update(page_info)
+    return res

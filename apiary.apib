@@ -1,0 +1,564 @@
+FORMAT: 1A
+
+# Keystone SCIM
+
+Keystone SCIM is an OpenStack Keystone extension that enables the management
+of User, Groups and Roles using [SCIM v1.1 standard](
+http://www.simplecloud.info). As any Keystone extension, it's designed to be
+installed on top of an existing Keystone installation, following Keystone
+recommendations for extensions.
+
+A brief description of SCIM:
+
+> The SCIM standard was created to simplify user management in the cloud by
+defining a schema for representing users and groups and a REST API for all
+the necessary CRUD operations.
+
+SCIM User and Group API are a direct translation of Keystone User and Group
+APIs, they even share the same security policies (with the exact same names).
+
+On the other hand, SCIM Roles are slightly different from Keystone Roles: now
+SCIM Roles are _domain aware_. The extension implementation does not make
+any modification to the underlying database, in order to maintain backward
+compatibility with Keystone Roles API.
+
+SCIM Roles are implemented on top of Keystone Roles, prefixing the `domain
+id` to the role name. You may argue that this is a kinda of a hack, and the
+relational integrity is not maintained. And that's true, but in this way the
+database schema is not modified and thus the Keystone Roles API can interact
+with SCIM Roles _out-of-the-box_.
+
+This document specifies the SCIM API, but do not attemp to describe Keystone,
+as it is already specified by OpenStack. For information regarding obtaining
+token for use Keystone API, management of Keystone resources (Domains,
+Projects, Users, Groups, Roles, Role assigment) please refer to [Keystone
+official documentation](https://github.com/openstack/identity-api/tree/master/v3/src/markdown).
+
+# Group Users
+
+## Users Collection [/v3/OS-SCIM/Users{?domain_id}{?count}{?startIndex}]
+
+### Create an User [POST]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "userName": "alice",
+            "displayName": "Alice Smith",
+            "password": "passw0rd",
+            "emails": [
+                {
+                    "value": "alice@mailhost.com"
+                }
+            ],
+            "active": true,
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "userName": "alice",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "displayName": "Alice Smith",
+            "emails": [
+                {
+                    "value": "alice@mailhost.com"
+                }
+            ],
+            "active": true,
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### List Users [GET]
+
++ Parameters
+
+    + domain_id (optional, string) ... filter users by its domain
+    + count (optional, int) ... (pagination) limit the number of results
+    + startIndex (optional, int) ... (pagination) the start of the listing
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200 (application/json)
+
+    ```json
+    {
+      "Resources": [
+        {
+          "active": true,
+          "userName": "alice",
+          "displayName": "Alice Smith",
+          "id": "19041ee7679649879ada04417753ad4d",
+          "emails": [
+            {
+              "value": "alice@mailhost.com"
+            }
+          ],
+          "urn:scim:schemas:extension:keystone:1.0": {
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+          }
+        }
+      ],
+      "schemas": [
+        "urn:scim:schemas:core:1.0",
+        "urn:scim:schemas:extension:keystone:1.0"
+      ]
+    }
+    ```
+
+## User Resource [/v3/OS-SCIM/Users/{id}]
+
++ Parameters
+
+    + id (string) ... The User Id.
+
+### Update an existing User [PUT]
+
++ Request
+
+    + Parameters
+
+        + id (string, mandatory) ... The User Id.
+
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "userName": "alice",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "displayName": "Alice Smith",
+            "password": "N3W-passw0rd",
+            "emails": [
+                {
+                    "value": "alice@mailhost.com"
+                }
+            ],
+            "active": true,
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "userName": "alice",
+            "displayName": "Alice Smith",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "emails": [
+                {
+                    "value": "alice@mailhost.com"
+                }
+            ],
+            "active": true,
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### Get an existing User [GET]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "userName": "alice",
+            "displayName": "Alice Smith",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "emails": [
+                {
+                    "value": "alice@mailhost.com"
+                }
+            ],
+            "active": true,
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### Delete an existing User [DELETE]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 204
+
+
+# Group Groups
+
+## Groups Collection [/v3/OS-SCIM/Groups{?domain_id}{?count}{?startIndex}]
+
+### Create a Group [POST]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "displayName": "aGroup",
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "displayName": "aGroup",
+            "id": "1d50bfc013ee407c84daa4912bf870b1"
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### List Groups [GET]
+
++ Parameters
+
+    + domain_id (optional, string) ... filter users by its domain
+    + count (optional, int) ... (pagination) limit the number of results
+    + startIndex (optional, int) ... (pagination) the start of the listing
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200 (application/json)
+
+    ```json
+    {
+      "Resources": [
+        {
+          "displayName": "aGroup",
+          "id": "19041ee7679649879ada04417753ad4d",
+          "urn:scim:schemas:extension:keystone:1.0": {
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+          }
+        }
+      ],
+      "schemas": [
+        "urn:scim:schemas:core:1.0",
+        "urn:scim:schemas:extension:keystone:1.0"
+      ]
+    }
+    ```
+
+## Group Resource [/v3/OS-SCIM/Groups/{id}]
+
++ Parameters
+
+    + id (string) ... The Group Id.
+
+### Update an existing Group [PUT]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "id": "19041ee7679649879ada04417753ad4d",
+            "displayName": "New Group Name",
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "displayName": "New Group Name",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### Get an existing Group [GET]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:core:1.0",
+                        "urn:scim:schemas:extension:keystone:1.0"],
+            "displayName": "New Group Name",
+            "id": "19041ee7679649879ada04417753ad4d",
+            "urn:scim:schemas:extension:keystone:1.0": {
+                "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+        }
+        ```
+
+### Delete an existing Group [DELETE]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 204
+
+
+# Group Roles
+
+## Roles Collection [/v3/OS-SCIM/Roles{?domain_id}{?count}{?startIndex}]
+
+### Create an Roles [POST]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }
+        ```
+
+### List Roles [GET]
+
++ Parameters
+
+    + domain_id (optional, string) ... filter users by its domain
+    + count (optional, int) ... (pagination) limit the number of results
+    + startIndex (optional, int) ... (pagination) the start of the listing
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200 (application/json)
+
+    ```json
+    {
+      "Resources": [
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }
+      ],
+      "schemas": [
+        "urn:scim:schemas:extension:keystone:1.0"
+      ]
+    }
+    ```
+
+## Role Resource [/v3/OS-SCIM/Roles/{id}]
+
++ Parameters
+
+    + id (string) ... The User Id.
+
+### Update an existing Role [PUT]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aNewRoleName",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aNewRoleName",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }
+        ```
+
+### Get an existing Role [GET]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }
+        ```
+
+### Delete an existing Role [DELETE]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        ```
+
++ Response 204
