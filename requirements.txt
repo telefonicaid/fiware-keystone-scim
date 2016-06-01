@@ -1,1 +1,2 @@
-#-e git+https://github.com/openstack/keystone/tree/icehouse-eol#egg=keystone
+-e git+https://github.com/openstack/keystone.git@icehouse-eol#egg=keystone
+-e git+https://github.com/openstack/python-keystoneclient.git@icehouse-eol#egg=python-keystoneclient

@@ -1,0 +1,47 @@
+CHANGES
+=======
+
+v1.0.0
+------
+* Customize keystone-scim component
+
+
+v0.4.1
+------
+* Update script CI
+
+
+v0.4.0
+------
+
+* Add full SCIM pagination info data (totalResults was missed)
+
+V0.3.0
+------
+
+* FIX allow delete role by admin user
+* ADD support juno listing
+
+v0.2.1
+------
+
+* Transferring blueprint from apiary.io
+* Transferring blueprint from apiary.io
+* Bump to 0.2.1
+* FIX unclosed literal
+* ADD travis-ci file
+* FIX README removing warnings about already fixed known issues
+* ADD SCIM displayName attribute for User resource
+* ADD SCIM Pagination support
+* Remove unused code
+* Add Schemas SCIM endpoint
+* Fix RPM scriptlet bug
+* Add EXTENSION_DATA
+* Fix license removing non-ascii characters
+* Bump to version 0.2.0
+* Add license to project files
+
+v0.1.0
+------
+
+* Initial commit for Keystone SCIM extension
