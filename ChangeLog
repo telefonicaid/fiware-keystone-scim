@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+v1.0.0
+------
+* Customize keystone-scim component
+
+
 v0.4.1
 ------
 * Update script CI

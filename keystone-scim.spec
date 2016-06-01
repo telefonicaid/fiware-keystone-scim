@@ -1,7 +1,5 @@
 %define timestamp %(date +"%Y%m%d%H%M%S")
 Name: keystone-scim
-# Version: 0.4.0
-# Release: %{timestamp}
 Version: %{_version}
 Release: %{_release}
 Summary: Keystone SCIM extension
