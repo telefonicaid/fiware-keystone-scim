@@ -16,6 +16,10 @@ BuildArch: noarch
 
 %define _target_os Linux
 %define python_lib /usr/lib/python2.6/site-packages
+%if 0%{?with_python27}
+%define python_lib /usr/lib/python2.7/site-packages
+%endif # if with_python27
+
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
 %define keystone_policy /etc/keystone/policy.json
 
@@ -29,7 +33,7 @@ cp -a %{_root}/keystone_scim $RPM_BUILD_ROOT/%{python_lib}
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_scim -name "*.pyc" -delete
 
 %files
-"/usr/lib/python2.6/site-packages/keystone_scim"
+%{python_lib}/keystone_scim/*
 
 %post
 if ! grep -q -F "[filter:scim_extension]" "%{keystone_paste}"; then
