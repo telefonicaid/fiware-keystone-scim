@@ -131,7 +131,7 @@ class ScimUserV3Controller(UserV3):
         return data
 
 
-@dependency.requires('assignment_api')
+@dependency.requires('assignment_api', 'role_api')
 class ScimRoleV3Controller(controller.V3Controller):
 
     collection_name = 'roles'
@@ -160,7 +160,7 @@ class ScimRoleV3Controller(controller.V3Controller):
         self._require_attribute(kwargs, 'name')
         key_role = conv.role_scim2key(kwargs)
         ref = self._assign_unique_id(key_role)
-        created_ref = self.assignment_api.create_role(ref['id'], ref)
+        created_ref = self.role_api.create_role(ref['id'], ref)
         return conv.role_key2scim(created_ref)
 
     @controller.protected()
