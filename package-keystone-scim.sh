@@ -22,7 +22,7 @@ RPM_DIR=$BASE/build/rpm
 mkdir -p $RPM_DIR/BUILD
 
 rpmbuild -bb keystone-scim.spec \
-  --define "_topdir  $RPM_DIR" \
+  --define "_topdir $RPM_DIR" \
   --define "_root $BASE"\
   --define "_version $ver"\
   --define "_release $rel"\
