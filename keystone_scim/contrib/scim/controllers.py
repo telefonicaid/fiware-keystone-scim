@@ -26,7 +26,8 @@ from keystone.common import dependency
 from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
-from keystone.openstack.common import versionutils
+try: from oslo_utils import versionutils
+except ImportError: from keystone.openstack.common import versionutils
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 import converter as conv
