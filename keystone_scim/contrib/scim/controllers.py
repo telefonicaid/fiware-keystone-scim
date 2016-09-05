@@ -131,7 +131,7 @@ class ScimUserV3Controller(UserV3):
         return data
 
 
-@dependency.requires('assignment_api' if not 'M' in versionutils.deprecated._RELEASES else 'assignment_api','role_api')
+@dependency.requires('assignment_api' if not 'M' in versionutils.deprecated._RELEASES else 'role_api','assignment_api')
 class ScimRoleV3Controller(controller.V3Controller):
     collection_name = 'roles'
     member_name = 'role'
