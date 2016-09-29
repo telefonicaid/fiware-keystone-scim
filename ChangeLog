@@ -1,6 +1,26 @@
 CHANGES
 =======
 
+v1.1.5
+-------
+* fix dependency order about role_api
+
+
+v1.1.4
+------
+* Allow set version at rpm package script
+
+
+v1.1.3
+------
+* Allow use keystone-scim with keystone liberty
+
+
+v1.1.0
+------
+* Allow use keystone-scim with python27
+
+
 v1.0.0
 ------
 * Customize keystone-scim component
