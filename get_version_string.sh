@@ -56,7 +56,7 @@ get_version_string()
            version="${describe_tags%-*-*}"
            echo "${version%.*}-${version#*.*.*.}-$(git log --pretty=format:'%h' -1)"
         ;;
-        develop)
+        develop|master)
           ## If we are in develop use the total count of commits of the repo
           total_commit_number=$(git rev-list --all --count)
           short_hash=$(git rev-parse --short HEAD)
