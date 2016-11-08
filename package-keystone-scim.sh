@@ -16,12 +16,14 @@ ELEMENTS=${#args[@]}
 
 for (( i=0;i<$ELEMENTS;i++)); do
     arg=${args[${i}]}
-    if [ "$arg" == "--with_python27" ]; then
+    if [ "$arg" == "--with-python27" ]; then
         PYTHON27_VALUE=1
     fi
-    if [ "$arg" == "--with_version" ]; then
+    if [ "$arg" == "--with-version" ]; then
         VERSION_VALUE=${args[${i}+1]}
-        RELEASE_VALUE=0
+    fi
+    if [ "$arg" == "--with-release" ]; then
+        RELEASE_VALUE=${args[${i}+1]}
     fi
 done
 
