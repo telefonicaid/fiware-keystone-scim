@@ -53,13 +53,15 @@ def pagination(context, hints=None):
     return hints
 
 def get_scim_page_info(context, hints):
-    page_info = {
-        "totalResults": hints.scim_total,
-    }
-    if ('startIndex' in context['query_string']):
-        page_info["startIndex"] = hints.scim_offset
-    if ('count' in context['query_string']):
-        page_info["itemsPerPage"] = hints.scim_limit
+    page_info = { "totalResults": 0 }
+    try:
+        page_info["totalResults"] = hints.scim_total
+        if ('startIndex' in context['query_string']):
+            page_info["startIndex"] = hints.scim_offset
+        if ('count' in context['query_string']):
+            page_info["itemsPerPage"] = hints.scim_limit
+    except AttributeError:
+        pass
     return page_info
 
 
@@ -114,6 +116,7 @@ class ScimUserV3Controller(UserV3):
     def patch_user(self, context, user_id, **kwargs):
         scim = self._denormalize(kwargs)
         user = conv.user_scim2key(scim)
+        LOG.debug('patch_user %s spasswordusercontroller' % user_id)
         ref = super(ScimUserV3Controller, self).update_user(
             context, user_id=user_id, user=user)
         return conv.user_key2scim(ref.get('user', None))
