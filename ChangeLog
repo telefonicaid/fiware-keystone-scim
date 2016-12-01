@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* fix 500 error when retrieving users from keystone LDAP [#42]
+
+
 v1.1.5
 -------
 * fix dependency order about role_api
