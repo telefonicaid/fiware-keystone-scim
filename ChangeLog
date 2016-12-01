@@ -1,8 +1,13 @@
 CHANGES
 =======
 
+v1.1.7
+-------
 * fix 500 error when retrieving users from keystone LDAP [#42]
 
+v1.1.6
+-------
+* added --with-release version and changed flag style
 
 v1.1.5
 -------
