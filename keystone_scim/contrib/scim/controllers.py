@@ -20,7 +20,7 @@
 
 """Extensions supporting SCIM."""
 
-from keystone import config
+#from keystone import config
 from keystone.common import controller
 from keystone.common import dependency
 from keystone.common import driver_hints
@@ -33,7 +33,10 @@ except ImportError: from keystone.openstack.common import log
 import converter as conv
 import schemas
 
-CONF = config.CONF
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
+
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
