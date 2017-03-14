@@ -48,7 +48,15 @@ sudo service openstack-keystone restart
 
 ### TGZ installaton
 
-**TBD**
+Uncompress tgz file plugin into python site-packages directory.
+Make a soft link from keystone contrib directory to that directory.
+For deep details follow [RPM spec steps ][./keystone-scim.spec).
+
+### Install Keystone
+
+There is a complete guide to install step by step keystone:
+
+https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
 ### Permissions fine tuning
 
