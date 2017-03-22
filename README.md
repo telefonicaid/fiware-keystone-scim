@@ -54,7 +54,7 @@ For deep details follow [RPM spec steps ][./keystone-scim.spec).
 
 ### Install Keystone
 
-There is a complete guide to install step by step keystone:
+There is a complete guide to install step by step keystone for development purposes:
 
 https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
