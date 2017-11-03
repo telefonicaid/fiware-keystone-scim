@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+
+Upgrade plugin to Keystone Mitaka version (including docker).
+
 v1.1.7
 -------
 * fix 500 error when retrieving users from keystone LDAP [#42]
