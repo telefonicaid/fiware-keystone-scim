@@ -39,6 +39,8 @@ except ImportError: from oslo.config import cfg
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
+RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
+
 
 def pagination(context, hints=None):
     """Enhance Hints with SCIM pagination info (limit and offset)"""
@@ -93,8 +95,8 @@ class ScimUserV3Controller(UserV3):
     @controller.filterprotected('domain_id', 'enabled', 'name')
     def list_users(self, context, filters):
         hints = pagination(context, UserV3.build_driver_hints(context, filters))
-        if (('J' in versionutils.deprecated._RELEASES) or
-            ('K' in versionutils.deprecated._RELEASES)):
+        if (('J' in RELEASES) or
+            ('K' in RELEASES)):
             refs = self.identity_api.list_users(
                 domain_scope=self._get_domain_id_for_list_request(context),
                 hints=hints)
@@ -137,7 +139,7 @@ class ScimUserV3Controller(UserV3):
         return data
 
 
-@dependency.requires('assignment_api' if not 'M' in versionutils.deprecated._RELEASES else 'role_api','assignment_api')
+@dependency.requires('assignment_api' if not 'M' in RELEASES else 'role_api','assignment_api')
 class ScimRoleV3Controller(controller.V3Controller):
     collection_name = 'roles'
     member_name = 'role'
@@ -156,7 +158,7 @@ class ScimRoleV3Controller(controller.V3Controller):
                              comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             refs = self.role_api.list_roles(hints=pagination(context, hints))
         else:
             refs = self.assignment_api.list_roles(hints=pagination(context, hints))
@@ -168,7 +170,7 @@ class ScimRoleV3Controller(controller.V3Controller):
         self._require_attribute(kwargs, 'name')
         key_role = conv.role_scim2key(kwargs)
         ref = self._assign_unique_id(key_role)
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             created_ref = self.role_api.create_role(ref['id'], ref)
         else:
             created_ref = self.assignment_api.create_role(ref['id'], ref)
@@ -176,7 +178,7 @@ class ScimRoleV3Controller(controller.V3Controller):
 
     @controller.protected()
     def scim_get_role(self, context, role_id):
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             ref = self.role_api.get_role(role_id)
         else:
             ref = self.assignment_api.get_role(role_id)
@@ -187,7 +189,7 @@ class ScimRoleV3Controller(controller.V3Controller):
         key_role = conv.role_scim2key(role)
         self._require_matching_id(role_id, key_role)
         self._require_matching_domain_id(role_id, role, self.load_role)
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             ref = self.role_api.update_role(role_id, key_role)
         else:
             ref = self.assignment_api.update_role(role_id, key_role)
@@ -197,13 +199,13 @@ class ScimRoleV3Controller(controller.V3Controller):
         return self.scim_patch_role(context, role_id, **role)
 
     def scim_delete_role(self, context, role_id):
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             self.role_api.delete_role(role_id)
         else:
             self.assignment_api.delete_role(role_id)
 
     def load_role(self, role_id):
-        if ('M' in versionutils.deprecated._RELEASES):  # Liberty and upper
+        if ('M' in RELEASES):  # Liberty and upper
             return conv.role_key2scim(self.role_api.get_role(role_id))
         else:
             return conv.role_key2scim(self.assignment_api.get_role(role_id))
@@ -220,7 +222,7 @@ class ScimGroupV3Controller(GroupV3):
     @controller.filterprotected('domain_id', 'name')
     def list_groups(self, context, filters):
         hints = pagination(context, GroupV3.build_driver_hints(context, filters))
-        if 'J' in versionutils.deprecated._RELEASES:
+        if 'J' in RELEASES:
             refs = self.identity_api.list_groups(
                 domain_scope=self._get_domain_id_for_list_request(context),
                 hints=hints)
