@@ -1,8 +1,7 @@
 CHANGES
 =======
 
-
-Upgrade plugin to Keystone Mitaka version (including docker).
+Upgrade plugin for compatibility with Mitaka version (including docker).
 
 v1.1.7
 -------
