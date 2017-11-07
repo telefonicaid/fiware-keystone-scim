@@ -3,7 +3,7 @@ CHANGES
 
 v1.1.8
 -------
-Upgrade plugin for compatibility with Mitaka version (including docker) [#43]
+Upgrade plugin for compatibility with Mitaka and Newton version (including docker) [#43]
 
 v1.1.7
 -------
