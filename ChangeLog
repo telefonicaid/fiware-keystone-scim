@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+v1.1.8
+-------
 Upgrade plugin for compatibility with Mitaka version (including docker).
 
 v1.1.7
