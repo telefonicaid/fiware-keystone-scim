@@ -20,7 +20,13 @@ BuildArch: noarch
 %define python_lib /usr/lib/python2.7/site-packages
 %endif # if with_python27
 
+%define check_paste %(test -e /etc/keystone/keystone-paste.ini && echo 1 || echo 0)
+%if %check_paste
+%define keystone_paste /etc/keystone/keystone-paste.ini
+%else
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
+%endif
+
 %define keystone_policy /etc/keystone/policy.json
 
 %description

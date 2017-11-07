@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+v1.1.8
+-------
+Upgrade plugin for compatibility with Mitaka and Newton version (including docker) [#43]
+
 v1.1.7
 -------
 * fix 500 error when retrieving users from keystone LDAP [#42]
