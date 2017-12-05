@@ -39,6 +39,7 @@ cp -a %{_root}/keystone_scim $RPM_BUILD_ROOT/%{python_lib}
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_scim -name "*.pyc" -delete
 
 %files
+%defattr(644,root,root,755)
 %{python_lib}/keystone_scim/*
 
 %post
