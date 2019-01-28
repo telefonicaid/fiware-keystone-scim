@@ -43,15 +43,23 @@ RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else ver
 
 def pagination(context, hints=None):
     """Enhance Hints with SCIM pagination info (limit and offset)"""
-    q = context['query_string']
+    q = None
+    if ('O' in RELEASES):  # Newton and upper
+        if context.context_dict and 'query_string' in context.context_dict:
+            q = context.context_dict['query_string']
+    else:
+        if context and 'query_string' in context:
+            q = context['query_string']
     if hints is None:
         hints = driver_hints.Hints()
     try:
-        hints.scim_limit = q['count']
+        if q and 'count' in q:
+            hints.scim_limit = q['count']
     except KeyError:
         pass
     try:
-        hints.scim_offset = q['startIndex']
+        if q and 'startIndex' in q:
+            hints.scim_offset = q['startIndex']
     except KeyError:
         pass
     return hints
@@ -60,10 +68,18 @@ def get_scim_page_info(context, hints):
     page_info = { "totalResults": 0 }
     try:
         page_info["totalResults"] = hints.scim_total
-        if ('startIndex' in context['query_string']):
-            page_info["startIndex"] = hints.scim_offset
-        if ('count' in context['query_string']):
-            page_info["itemsPerPage"] = hints.scim_limit
+        if ('O' in RELEASES):  # Newton and upper
+            if (context.context_dict and 'query_string' in context.context_dict and 'startIndex' in context.context_dict['query_string']):
+                page_info["startIndex"] = hints.scim_offset
+        else:
+            if (context and 'query_string' in context and 'startIndex' in context['query_string']):
+                page_info["startIndex"] = hints.scim_offset
+        if ('O' in RELEASES):  # Newton and upper
+            if (context.context_dict and 'query_string' in context.context_dict and 'count' in context.context_dict['query_string']):
+                page_info["itemsPerPage"] = hints.scim_limit
+        else:
+            if (context and 'query_string' in context and 'count' in context['query_string']):
+                page_info["itemsPerPage"] = hints.scim_limit
     except AttributeError:
         pass
     return page_info
@@ -151,10 +167,16 @@ class ScimRoleV3Controller(controller.V3Controller):
     def scim_list_roles(self, context, filters):
         hints = driver_hints.Hints()
         try:
-            hints.add_filter('name',
-                             '%s%s' % (context['query_string']['domain_id'],
-                                       conv.ROLE_SEP),
-                             comparator='startswith', case_sensitive=False)
+            if ('O' in RELEASES):  # Newton and upper
+                hints.add_filter('name',
+                                 '%s%s' % (context.context_dict['query_string']['domain_id'],
+                                           conv.ROLE_SEP),
+                                 comparator='startswith', case_sensitive=False)
+            else:
+                hints.add_filter('name',
+                                 '%s%s' % (context['query_string']['domain_id'],
+                                           conv.ROLE_SEP),
+                                 comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
         if ('M' in RELEASES):  # Liberty and upper
