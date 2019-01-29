@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+v1.1.9
+-------
+Upgrade plugin for compatibility with Newton version (including docker) [#43]
+
 v1.1.8
 -------
 Upgrade plugin for compatibility with Mitaka and Newton version (including docker) [#43]
