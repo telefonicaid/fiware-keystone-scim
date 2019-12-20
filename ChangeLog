@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+Fix User/Groups pagination: force order by name, offset and then limit.
+
 v1.1.8
 -------
 Upgrade plugin for compatibility with Mitaka and Newton version (including docker) [#43]
