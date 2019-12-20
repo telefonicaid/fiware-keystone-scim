@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+v1.1.9
+-------
 Fix User/Groups pagination: force order by name, offset and then limit.
 
 v1.1.8
