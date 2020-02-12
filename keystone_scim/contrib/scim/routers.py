@@ -98,6 +98,11 @@ class ScimRouter(wsgi.ExtensionRouter):
                        action='scim_delete_role',
                        conditions=dict(method=['DELETE']))
 
+        mapper.connect(self.PATH_PREFIX + '/Roles/all/{domain_id}',
+                       controller=role_controller,
+                       action='scim_delete_roles',
+                       conditions=dict(method=['DELETE']))
+
         # Groups
 
         mapper.connect(self.PATH_PREFIX + '/Groups',

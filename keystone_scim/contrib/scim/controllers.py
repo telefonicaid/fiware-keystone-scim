@@ -203,6 +203,16 @@ class ScimRoleV3Controller(controller.V3Controller):
         else:
             self.assignment_api.delete_role(role_id)
 
+    def scim_delete_roles(self, context, domain_id):
+        # Get all roles of domain
+        roles = self.scim_list_roles(context, domain_id)
+        for role in roles['Resources']:
+            role_id = role['id']
+            if ('M' in RELEASES):  # Liberty and upper
+                self.role_api.delete_role(role_id)
+            else:
+                self.assignment_api.delete_role(role_id)
+
     def load_role(self, role_id):
         if ('M' in RELEASES):  # Liberty and upper
             return conv.role_key2scim(self.role_api.get_role(role_id))
