@@ -203,6 +203,31 @@ class ScimRoleV3Controller(controller.V3Controller):
         else:
             self.assignment_api.delete_role(role_id)
 
+    @controller.filterprotected('domain_id')
+    def scim_delete_roles(self, context, filters):
+        # Get all roles of domain
+        hints = driver_hints.Hints()
+        try:
+            hints.add_filter('name',
+                             '%s%s' % (context['query_string']['domain_id'],
+                                       conv.ROLE_SEP),
+                             comparator='startswith', case_sensitive=False)
+        except KeyError:
+            pass
+        if ('M' in RELEASES):  # Liberty and upper
+            refs = self.role_api.list_roles(hints=pagination(context, hints))
+        else:
+            refs = self.assignment_api.list_roles(hints=pagination(context, hints))
+        scim_page_info = get_scim_page_info(context, hints)
+        roles = conv.listroles_key2scim(refs, scim_page_info)
+        for role in roles['Resources']:
+            # Delete each role
+            role_id = role['id']
+            if ('M' in RELEASES):  # Liberty and upper
+                self.role_api.delete_role(role_id)
+            else:
+                self.assignment_api.delete_role(role_id)
+
     def load_role(self, role_id):
         if ('M' in RELEASES):  # Liberty and upper
             return conv.role_key2scim(self.role_api.get_role(role_id))

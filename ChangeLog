@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+Add new API to delete all domain roles at once
+
 v1.1.9
 -------
 Fix User/Groups pagination: force order by name, offset and then limit [#51]
