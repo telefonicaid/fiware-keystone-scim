@@ -176,6 +176,20 @@ class ScimRoleV3Controller(controller.V3Controller):
         return conv.role_key2scim(created_ref)
 
     @controller.protected()
+    def scim_create_roles(self, context, **kwargs):
+        ids = []
+        for role in kwargs['roles']:
+            self._require_attribute(role, 'name')
+            key_role = conv.role_scim2key(role)
+            ref = self._assign_unique_id(key_role)
+            if ('M' in RELEASES):  # Liberty and upper
+                created_ref = self.role_api.create_role(ref['id'], ref)
+            else:
+                created_ref = self.assignment_api.create_role(ref['id'], ref)
+            ids.append(conv.role_key2scim(created_ref))
+        return ids
+
+    @controller.protected()
     def scim_get_role(self, context, role_id):
         if ('M' in RELEASES):  # Liberty and upper
             ref = self.role_api.get_role(role_id)
