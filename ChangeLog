@@ -1,6 +1,7 @@
 CHANGES
 =======
-
+v1.3.0
+------
 Add new API to create all domain roles at once
 
 v1.2.0
