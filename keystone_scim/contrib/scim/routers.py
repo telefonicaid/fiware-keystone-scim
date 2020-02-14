@@ -100,6 +100,11 @@ class ScimRouter(wsgi.ExtensionRouter):
 
         mapper.connect(self.PATH_PREFIX + '/RolesAll',
                        controller=role_controller,
+                       action='scim_create_roles',
+                       conditions=dict(method=['POST']))
+
+        mapper.connect(self.PATH_PREFIX + '/RolesAll',
+                       controller=role_controller,
                        action='scim_delete_roles',
                        conditions=dict(method=['DELETE']))
 

@@ -566,6 +566,45 @@ official documentation](https://github.com/openstack/identity-api/tree/master/v3
 
 ## Role Resource [/v3/OS-SCIM/RolesAll]
 
+### Create all Roles [POST]
+
++ Request
+
+    + Headers
+
+        ```
+        X-Auth-Token: <TOKEN>
+        Content-Type: application/son
+        ```
+
+    + Body
+
+        ```json
+        {
+         "roles": [
+            {
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df"
+            }
+            ]
+        }
+        ```
+
++ Response 200
+
+    + Body
+
+        ```json
+        [{
+            "schemas": ["urn:scim:schemas:extension:keystone:1.0"],
+            "name": "aRole",
+            "domain_id": "91d79dc2211d43a7985ebc27cdd146df",
+            "id": "2e24460ee4bd40c0aaac2f4317a77706"
+        }]
+        ```
+
+
 ### Delete all existing Roles [DELETE]
 
 + Request
