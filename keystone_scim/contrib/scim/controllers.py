@@ -43,7 +43,15 @@ RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else ver
 
 def pagination(context, hints=None):
     """Enhance Hints with SCIM pagination info (limit and offset)"""
-    q = context['query_string']
+    q = None
+    try:
+        q = context['query_string']
+    except TypeError:
+        q = {
+            'count': context.params.get('count'),
+            'startIndex': context.params.get('startIndex')
+        }
+
     if hints is None:
         hints = driver_hints.Hints()
     try:
@@ -64,6 +72,11 @@ def get_scim_page_info(context, hints):
         if ('startIndex' in context['query_string']):
             page_info["startIndex"] = hints.scim_offset
         if ('count' in context['query_string']):
+            page_info["itemsPerPage"] = hints.scim_limit
+    except TypeError:
+        if context.params.get('startIndex'):
+            page_info["startIndex"] = hints.scim_offset
+        if context.params.get('count'):
             page_info["itemsPerPage"] = hints.scim_limit
     except AttributeError:
         pass
@@ -156,6 +169,11 @@ class ScimRoleV3Controller(controller.V3Controller):
                              '%s%s' % (context['query_string']['domain_id'],
                                        conv.ROLE_SEP),
                              comparator='startswith', case_sensitive=False)
+        except TypeError: # For Newton and upper version
+            hints.add_filter('name',
+                             '%s%s' % (context.params.get('domain_id'),
+                                       conv.ROLE_SEP),
+                             comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
         if ('M' in RELEASES):  # Liberty and upper
@@ -225,6 +243,11 @@ class ScimRoleV3Controller(controller.V3Controller):
         try:
             hints.add_filter('name',
                              '%s%s' % (context['query_string']['domain_id'],
+                                       conv.ROLE_SEP),
+                             comparator='startswith', case_sensitive=False)
+        except TypeError: # For Newton and upper version
+            hints.add_filter('name',
+                             '%s%s' % (context.params.get('domain_id'),
                                        conv.ROLE_SEP),
                              comparator='startswith', case_sensitive=False)
         except KeyError:
