@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+v1.3.0
+------
 Add: compatibility with new request context (Newton, Ocata...)
 Fix pagination order by name only for scim elements [#58]
 Add new API to create all domain roles at once
