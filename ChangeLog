@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+v1.4.0
+------
+Add: compatibility with flask middleware for (Rocky)
+
 v1.3.0
 ------
 Add: compatibility with new request context (Newton, Ocata...)
