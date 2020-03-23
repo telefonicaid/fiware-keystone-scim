@@ -109,6 +109,8 @@ else
   echo "Already defined scim_get_schemas. Skipping."
 fi
 
+ln -fs %{python_lib}/keystone_scim/contrib/scim %{python_lib}/keystone/contrib
+
 echo "SCIM extension installed successfully. Restart Keystone daemon to take effect."
 
 %preun

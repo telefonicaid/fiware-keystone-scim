@@ -151,3 +151,11 @@ class ScimRouter(wsgi.ExtensionRouter):
                        controller=scim_info_controller,
                        action='scim_get_schemas',
                        conditions=dict(method=['GET']))
+
+class Routers(ScimRouter):
+    _path_prefixes = ('OS-SCIM')
+    def __init__(self):
+        super(Routers, self).__init__('scim')
+
+    def append_v3_routers(self, mapper, routers):
+        self.add_routes(mapper)

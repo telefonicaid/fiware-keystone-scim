@@ -21,7 +21,7 @@
 """Extensions supporting SCIM."""
 
 from keystone.common import controller
-from keystone.common import dependency
+from keystone.common import provider_api
 from keystone.common import driver_hints
 from keystone.common import wsgi
 from keystone.identity.controllers import UserV3, GroupV3
@@ -37,6 +37,7 @@ except ImportError: from oslo.config import cfg
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
+PROVIDERS = provider_api.ProviderAPIs
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
@@ -152,7 +153,6 @@ class ScimUserV3Controller(UserV3):
         return data
 
 
-@dependency.requires('assignment_api' if not 'M' in RELEASES else 'role_api','assignment_api')
 class ScimRoleV3Controller(controller.V3Controller):
     collection_name = 'roles'
     member_name = 'role'
@@ -176,10 +176,7 @@ class ScimRoleV3Controller(controller.V3Controller):
                              comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
-        if ('M' in RELEASES):  # Liberty and upper
-            refs = self.role_api.list_roles(hints=pagination(context, hints))
-        else:
-            refs = self.assignment_api.list_roles(hints=pagination(context, hints))
+        refs = PROVIDERS.role_api.list_roles(hints=pagination(context, hints))
         scim_page_info = get_scim_page_info(context, hints)
         return conv.listroles_key2scim(refs, scim_page_info)
 
@@ -188,10 +185,7 @@ class ScimRoleV3Controller(controller.V3Controller):
         self._require_attribute(kwargs, 'name')
         key_role = conv.role_scim2key(kwargs)
         ref = self._assign_unique_id(key_role)
-        if ('M' in RELEASES):  # Liberty and upper
-            created_ref = self.role_api.create_role(ref['id'], ref)
-        else:
-            created_ref = self.assignment_api.create_role(ref['id'], ref)
+        created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
         return conv.role_key2scim(created_ref)
 
     @controller.protected()
@@ -201,19 +195,13 @@ class ScimRoleV3Controller(controller.V3Controller):
             self._require_attribute(role, 'name')
             key_role = conv.role_scim2key(role)
             ref = self._assign_unique_id(key_role)
-            if ('M' in RELEASES):  # Liberty and upper
-                created_ref = self.role_api.create_role(ref['id'], ref)
-            else:
-                created_ref = self.assignment_api.create_role(ref['id'], ref)
+            created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
             ids.append(conv.role_key2scim(created_ref))
         return ids
 
     @controller.protected()
     def scim_get_role(self, context, role_id):
-        if ('M' in RELEASES):  # Liberty and upper
-            ref = self.role_api.get_role(role_id)
-        else:
-            ref = self.assignment_api.get_role(role_id)
+        ref = PROVIDERS.role_api.get_role(role_id)
         return conv.role_key2scim(ref)
 
     @controller.protected()
@@ -221,20 +209,14 @@ class ScimRoleV3Controller(controller.V3Controller):
         key_role = conv.role_scim2key(role)
         self._require_matching_id(role_id, key_role)
         self._require_matching_domain_id(role_id, role, self.load_role)
-        if ('M' in RELEASES):  # Liberty and upper
-            ref = self.role_api.update_role(role_id, key_role)
-        else:
-            ref = self.assignment_api.update_role(role_id, key_role)
+        PROVIDERS.role_api.update_role(role_id, key_role)
         return conv.role_key2scim(ref)
 
     def scim_put_role(self, context, role_id, **role):
         return self.scim_patch_role(context, role_id, **role)
 
     def scim_delete_role(self, context, role_id):
-        if ('M' in RELEASES):  # Liberty and upper
-            self.role_api.delete_role(role_id)
-        else:
-            self.assignment_api.delete_role(role_id)
+        PROVIDERS.role_api.delete_role(role_id)
 
     @controller.filterprotected('domain_id')
     def scim_delete_roles(self, context, filters):
@@ -252,26 +234,16 @@ class ScimRoleV3Controller(controller.V3Controller):
                              comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
-        if ('M' in RELEASES):  # Liberty and upper
-            refs = self.role_api.list_roles(hints=pagination(context, hints))
-        else:
-            refs = self.assignment_api.list_roles(hints=pagination(context, hints))
+        PROVIDERS.role_api.list_roles(hints=pagination(context, hints))
         scim_page_info = get_scim_page_info(context, hints)
         roles = conv.listroles_key2scim(refs, scim_page_info)
         for role in roles['Resources']:
             # Delete each role
             role_id = role['id']
-            if ('M' in RELEASES):  # Liberty and upper
-                self.role_api.delete_role(role_id)
-            else:
-                self.assignment_api.delete_role(role_id)
+            PROVIDERS.role_api.delete_role(role_id)
 
     def load_role(self, role_id):
-        if ('M' in RELEASES):  # Liberty and upper
-            return conv.role_key2scim(self.role_api.get_role(role_id))
-        else:
-            return conv.role_key2scim(self.assignment_api.get_role(role_id))
-
+        return conv.role_key2scim(PROVIDERS.role_api.get_role(role_id))
 
 class ScimGroupV3Controller(GroupV3):
 
@@ -284,14 +256,9 @@ class ScimGroupV3Controller(GroupV3):
     @controller.filterprotected('domain_id', 'name')
     def list_groups(self, context, filters):
         hints = pagination(context, GroupV3.build_driver_hints(context, filters))
-        if 'J' in RELEASES:
-            refs = self.identity_api.list_groups(
-                domain_scope=self._get_domain_id_for_list_request(context),
-                hints=hints)
-        else:
-            refs = self.identity_api.list_groups(
-                domain_scope=self._get_domain_id_for_request(context),
-                hints=hints)
+        refs = PROVIDERS.identity_api.list_groups(
+            domain_scope=self._get_domain_id_for_list_request(context),
+            hints=hints)
         scim_page_info = get_scim_page_info(context, hints)
         return conv.listgroups_key2scim(refs, scim_page_info)
 
