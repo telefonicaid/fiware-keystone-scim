@@ -1,0 +1,298 @@
+#
+# Copyright 2014 Telefonica Investigacion y Desarrollo, S.A.U
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+"""Extensions supporting SCIM."""
+
+from keystone.common import provider_api
+from keystone.common import driver_hints
+from keystone.common import wsgi
+import flask
+import flask_restful
+
+from keystone.api.users import UserResource, GroupResource
+try: from oslo_log import versionutils
+except ImportError: from keystone.openstack.common import versionutils
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
+import converter as conv
+import schemas
+
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
+
+CONF = cfg.CONF
+LOG = log.getLogger(__name__)
+PROVIDERS = provider_api.ProviderAPIs
+
+RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
+
+
+def pagination(hints=None):
+    """Enhance Hints with SCIM pagination info (limit and offset)"""
+    q = {
+        'count': flask.request.args.get('count'),
+        'startIndex': flask.request.args.get('startIndex')
+    }
+    if hints is None:
+        hints = driver_hints.Hints()
+    try:
+        hints.scim_limit = q['count']
+    except KeyError:
+        pass
+    try:
+        hints.scim_offset = q['startIndex']
+    except KeyError:
+        pass
+    hints.scim_order_by = 'name'
+    return hints
+
+def get_scim_page_info(hints):
+    page_info = { "totalResults": 0 }
+    page_info["totalResults"] = hints.scim_total
+    if flask.request.args.get('startIndex'):
+        page_info["startIndex"] = hints.scim_offset
+    if flask.request.args.get('count'):
+        page_info["itemsPerPage"] = hints.scim_limit
+    return page_info
+
+
+class ScimUserResource(UserResource):
+    collection_name = 'users'
+    member_name = 'user'
+    collection_key = 'users'
+    member_key = 'user'
+    api_prefix = '/OS-SCIM/Users'
+    
+    def get(self, user_id=None):
+        """Get a user resource or list users.
+
+        GET/HEAD /OS-SCIM/Users
+        GET/HEAD /OS-SCIM/Users/{user_id}
+        """
+        if user_id is not None:
+            return self._get_user(user_id)
+        return self._list_users()
+        
+    def _list_users(self):
+        filters = ('domain_id', 'enabled', 'name')
+        hints = pagination(self.build_driver_hints(filters))
+        domain = self._get_domain_id_for_list_request()
+        if domain is None and self.oslo_context.domain_id:
+            domain = self.oslo_context.domain_id        
+        refs = PROVIDERS.identity_api.list_users(
+            domain_scope=domain, hints=hints)        
+        scim_page_info = get_scim_page_info(hints)
+        return conv.listusers_key2scim(refs, scim_page_info)
+
+    def _get_user(self, user_id):
+        ref = PROVIDERS.identity_api.get_user(user_id)
+        return conv.user_key2scim(ref['user'])
+
+    def post(self):
+        user_data = self.request_body_json.get('user', {})
+        user_data = self._normalize_dict(user_data)
+        scim = self._denormalize(user_data)
+        user = conv.user_scim2key(scim)
+        ref = PROVIDERS.identity_api.create_user(user)
+        return conv.user_key2scim(ref.get('user', None))
+
+    def patch(self, user_id):
+        user_data = self.request_body_json.get('user', {})
+        user_data = self._normalize_dict(user_data)
+        scim = self._denormalize(user_data)
+        user = conv.user_scim2key(scim)
+        LOG.debug('patch_user %s spasswordusercontroller' % user_id)
+        ref = PROVIDERS.identity_api.update_user(user_id, user)
+        return conv.user_key2scim(ref.get('user', None))
+
+    def put(self, user_id):
+        return self.patch_user(user_id)
+
+    def delete(self, user_id):
+        return PROVIDERS.identity_api.delete_user(user_id)        
+
+    def _denormalize(self, data):
+        data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
+            'urn_scim_schemas_extension_keystone_1.0', {})
+        return data
+
+
+class ScimRoleResource(ks_flask.ResourceBase):
+    collection_name = 'roles'
+    member_name = 'role'
+    api_prefix = '/OS-SCIM/Roles'
+
+    def __init__(self):
+        super(ScimRoleResource, self).__init__()        
+        self.get_member_from_driver = self.load_role
+
+    def get(self, role_id=None):
+        """Get a role resource or list roles.
+
+        GET/HEAD /OS-SCIM/Roles
+        GET/HEAD /OS-SCIM/Roles/{user_id}
+        """
+        if role_id is not None:
+            return self._get_role(role_id)
+        return self._list_roles()
+
+    def _list_roles(self, role_id=None):    
+        filters = ('domain_id')
+        hints = driver_hints.Hints()
+        hints.add_filter('name',
+                         '%s%s' % (flask.request.args.get('domain_id'),
+                                   conv.ROLE_SEP),
+                         comparator='startswith', case_sensitive=False)
+        refs = PROVIDERS.role_api.list_roles(hints=pagination(hints))
+        scim_page_info = get_scim_page_info(hints)
+        return conv.listroles_key2scim(refs, scim_page_info)
+
+    def _get_role(self, role_id):
+        ref = PROVIDERS.role_api.get_role(role_id)
+        return conv.role_key2scim(ref)
+    
+    def post(self):
+        role_data = self.request_body_json.get('role', {})
+        #self._require_attribute(kwargs, 'name')
+        key_role = conv.role_scim2key(scim)
+        ref = self._assign_unique_id(key_role)
+        created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
+        return conv.role_key2scim(created_ref)
+
+    #def scim_patch_role(self, context, role_id, **role):
+    def patch(self, role_id):
+        role_data = self.request_body_json.get('role', {})        
+        key_role = conv.role_scim2key(role_data)
+        #self._require_matching_id(role_id, key_role)
+        #self._require_matching_domain_id(role_id, role, self.load_role)
+        PROVIDERS.role_api.update_role(role_id, key_role)
+        return conv.role_key2scim(ref)
+
+    def put(self, role_id, **role):
+        return self.patch(context, role_id)
+
+    def delete(self, role_id):
+        PROVIDERS.role_api.delete_role(role_id)
+
+    def load_role(self, role_id):
+        return conv.role_key2scim(PROVIDERS.role_api.get_role(role_id))
+
+
+class ScimAllRoleResource(ScimRoleResource):
+    api_prefix = '/OS-SCIM/RolesAll'
+    collection_key = 'users'
+    member_key = 'user'    
+    
+    def post(self):
+        ids = []
+        for role in flask.request.args.get('roles'):
+            self._require_attribute(role, 'name')
+            key_role = conv.role_scim2key(role)
+            ref = self._assign_unique_id(key_role)
+            created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
+            ids.append(conv.role_key2scim(created_ref))
+        return ids
+
+    def delete(self):
+        filters = ('domain_id')
+        # Get all roles of domain
+        hints = driver_hints.Hints()
+        hints.add_filter('name',
+                         '%s%s' % (flask.request.args.get('domain_id'),
+                                   conv.ROLE_SEP),
+                         comparator='startswith', case_sensitive=False)
+        refs = PROVIDERS.role_api.list_roles(hints=pagination(hints))
+        scim_page_info = get_scim_page_info(hints)
+        roles = conv.listroles_key2scim(refs, scim_page_info)
+        for role in roles['Resources']:
+            # Delete each role
+            role_id = role['id']
+            PROVIDERS.role_api.delete_role(role_id)
+    
+    
+#class ScimGroupV3Controller(GroupV3):
+class ScimGroupResource(GroupResource):
+    collection_name = 'groups'
+    member_name = 'group'
+    collection_key = 'groups'
+    member_key = 'group'
+    api_prefix = '/OS-SCIM/RolesAll'
+
+    def get(self, group_id=None):
+        """Get a group resource or list groups.
+
+        GET/HEAD /OS-SCIM/Groups
+        GET/HEAD /OS-SCIM/Groups/{group_id}
+        """
+        if group_id is not None:
+            return self._get_group(group_id)
+        return self._list_groups()
+
+    def _list_groups(self):
+        filters = ('domain_id', 'name')        
+        hints = pagination(context, self.build_driver_hints(filters))
+        domain = self._get_domain_id_for_list_request()
+        if domain is None and self.oslo_context.domain_id:
+            domain = self.oslo_context.domain_id                
+        refs = PROVIDERS.identity_api.list_groups(
+            domain_scope=domain, hints=hints)
+        scim_page_info = get_scim_page_info(hints)
+        return conv.listgroups_key2scim(refs, scim_page_info)
+
+    def _get_group(self, group_id):
+        ref = PROVIDERS.identity_api.get_group(group_id=group_id)
+        return conv.group_key2scim(ref['group'])
+
+    def post(self):
+        group_data = self.request_body_json.get('group', {})
+        scim = self._denormalize(group_data)
+        group = conv.group_scim2key(scim)
+        ref = PROVIDERS.identity_api.create_group(group)
+        return conv.group_key2scim(ref.get('group', None))
+
+    def patch(self, group_id):
+        group_data = self.request_body_json.get('group', {})        
+        scim = self._denormalize(group_data)
+        group = conv.group_scim2key(scim)
+        ref = PROVIDERS.identity_api.update_group(
+            group_id=group_id, group=group)
+        return conv.group_key2scim(ref.get('group', None))
+
+    def put(self, group_id):
+        return PROVIDERS.identity_api.patch_group(group_id)
+
+    def delete(self, group_id):
+        return PROVIDERS.identity_api.delete_group(group_id)                
+
+    def _denormalize(self, data):
+        data['urn:scim:schemas:extension:keystone:1.0'] = data.pop(
+            'urn_scim_schemas_extension_keystone_1.0', {})
+        return data
+
+
+class ScimAPI(ks_flask.APIBase):
+    _name = 'scim'
+    _import_name = __name__
+    _api_url_prefix = '/OS-SCIM'
+    resources = [ScimUserResource, ScimRoleResource, ScimAllRoleResource,
+                 ScimGroupResource]
+
+
+APIs = (ScimAPI,)
