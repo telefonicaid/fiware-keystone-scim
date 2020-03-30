@@ -234,7 +234,7 @@ class ScimRoleV3Controller(controller.V3Controller):
                              comparator='startswith', case_sensitive=False)
         except KeyError:
             pass
-        PROVIDERS.role_api.list_roles(hints=pagination(context, hints))
+        refs = PROVIDERS.role_api.list_roles(hints=pagination(context, hints))
         scim_page_info = get_scim_page_info(context, hints)
         roles = conv.listroles_key2scim(refs, scim_page_info)
         for role in roles['Resources']:
