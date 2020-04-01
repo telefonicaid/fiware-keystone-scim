@@ -22,17 +22,17 @@
 
 from keystone.common import provider_api
 from keystone.common import driver_hints
-from keystone.common import wsgi
 import flask
 import flask_restful
-
-from keystone.api.users import UserResource, GroupResource
+from keystone.server import flask as ks_flask
+from keystone.api.users import UserResource
+from keystone.api.groups import GroupsResource
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
-import converter as conv
-import schemas
+from keystone_scim.contrib.scim import converter as conv
+#import schemas
 
 try: from oslo_config import cfg
 except ImportError: from oslo.config import cfg
@@ -76,9 +76,9 @@ def get_scim_page_info(hints):
 class ScimUserResource(UserResource):
     collection_name = 'users'
     member_name = 'user'
-    collection_key = 'users'
+    collection_key = 'Users'
     member_key = 'user'
-    api_prefix = '/OS-SCIM/Users'
+    api_prefix = '/OS-SCIM'
     
     def get(self, user_id=None):
         """Get a user resource or list users.
@@ -137,7 +137,9 @@ class ScimUserResource(UserResource):
 class ScimRoleResource(ks_flask.ResourceBase):
     collection_name = 'roles'
     member_name = 'role'
-    api_prefix = '/OS-SCIM/Roles'
+    collection_key = 'Roles'
+    member_key = 'role'
+    api_prefix = '/OS-SCIM'
 
     def __init__(self):
         super(ScimRoleResource, self).__init__()        
@@ -196,9 +198,11 @@ class ScimRoleResource(ks_flask.ResourceBase):
 
 
 class ScimAllRoleResource(ScimRoleResource):
-    api_prefix = '/OS-SCIM/RolesAll'
-    collection_key = 'users'
-    member_key = 'user'    
+    collection_name = 'roles'
+    member_name = 'role'
+    api_prefix = '/OS-SCIM'
+    collection_key = 'RolesAll'
+    member_key = 'role'
     
     def post(self):
         ids = []
@@ -228,12 +232,12 @@ class ScimAllRoleResource(ScimRoleResource):
     
     
 #class ScimGroupV3Controller(GroupV3):
-class ScimGroupResource(GroupResource):
+class ScimGroupResource(GroupsResource):
     collection_name = 'groups'
     member_name = 'group'
-    collection_key = 'groups'
+    collection_key = 'Groups'
     member_key = 'group'
-    api_prefix = '/OS-SCIM/RolesAll'
+    api_prefix = '/OS-SCIM'
 
     def get(self, group_id=None):
         """Get a group resource or list groups.
