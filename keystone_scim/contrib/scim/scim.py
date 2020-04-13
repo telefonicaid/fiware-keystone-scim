@@ -29,6 +29,7 @@ from keystone.server import flask as ks_flask
 from six.moves import http_client
 from keystone.api.users import UserResource
 from keystone.api.groups import GroupsResource
+from keystone import exception
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 try: from oslo_log import log
@@ -83,7 +84,7 @@ def _build_user_target_enforcement():
             target['group'] = PROVIDERS.identity_api.get_group(
                 flask.request.view_args.get('group_id')
             )
-    except ks_exception.NotFound:  # nosec
+    except exception.NotFound:  # nosec
         # Defer existence in the event the user doesn't exist, we'll
         # check this later anyway.
         pass
@@ -147,7 +148,7 @@ class ScimUserResource(ks_flask.ResourceBase):
         return res
 
     def post(self):
-        user_data = self.request_body_json.get('user', {})
+        user_data = self.request_body_json
         target = {'user': user_data}
         ENFORCER.enforce_call(
             action='identity:create_user', target_attr=target
@@ -193,13 +194,13 @@ class ScimUserResource(ks_flask.ResourceBase):
 class ScimRoleResource(ks_flask.ResourceBase):
     collection_key = 'Roles'
     member_key = 'role'
-    api_prefix = '/OS-SCIM'
-    # get_member_from_driver = PROVIDERS.deferred_provider_lookup(
-    #     api='role_api', method='get_role')
 
     def __init__(self):
         super(ScimRoleResource, self).__init__()        
         self.get_member_from_driver = self.load_role
+
+    def _is_domain_role(self, role):
+        return bool(role.get('domain_id'))
 
     def get(self, role_id=None):
         """Get a role resource or list roles.
@@ -225,27 +226,46 @@ class ScimRoleResource(ks_flask.ResourceBase):
         return conv.listroles_key2scim(refs, scim_page_info)
 
     def _get_role(self, role_id):
-        LOG.debug('get_role %s' % role_id)
         err = None
         role = {}
         try:
             role = PROVIDERS.role_api.get_role(role_id)
-        except Exception as e:  # nosec
+        except Exception as e:
             err = e
         finally:
             role = self.wrap_member(role)
         return conv.role_key2scim(role)
     
     def post(self):
-        role_data = self.request_body_json.get('role', {})
+        role_data = self.request_body_json
         #self._require_attribute(kwargs, 'name')
-        key_role = conv.role_scim2key(scim)
+        if self._is_domain_role(role_data):
+            ENFORCER.enforce_call(action='identity:create_domain_role')
+        else:
+            ENFORCER.enforce_call(action='identity:create_role')
+        key_role = conv.role_scim2key(role_data)
         ref = self._assign_unique_id(key_role)
+        ref = self._normalize_dict(ref)
         created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
-        return conv.role_key2scim(created_ref)
+        return conv.role_key2scim(created_ref), http_client.CREATED
 
     def patch(self, role_id):
-        role_data = self.request_body_json.get('role', {})        
+        role_data = self.request_body_json
+        err = None
+        role = {}
+        try:
+            role = PROVIDERS.role_api.get_role(role_id)
+        except Exception as e:
+            err = e
+        finally:
+            if err is not None or not self._is_domain_role(role):
+                ENFORCER.enforce_call(action='identity:update_role')
+                if err:
+                    raise err
+            else:
+                ENFORCER.enforce_call(action='identity:update_domain_role',
+                                      member_target_type='role',
+                                      member_target=role)
         key_role = conv.role_scim2key(role_data)
         self._require_matching_id(key_role)
         #self._require_matching_domain_id(role_id, role, self.load_role)
@@ -257,6 +277,21 @@ class ScimRoleResource(ks_flask.ResourceBase):
         return self.patch(role_id)
 
     def delete(self, role_id):
+        err = None
+        role = {}
+        try:
+            role = PROVIDERS.role_api.get_role(role_id)
+        except Exception as e:
+            err = e
+        finally:
+            if err is not None or not self._is_domain_role(role):
+                ENFORCER.enforce_call(action='identity:delete_role')
+                if err:
+                    raise err
+            else:
+                ENFORCER.enforce_call(action='identity:delete_domain_role',
+                                      member_target_type='role',
+                                      member_target=role)
         PROVIDERS.role_api.delete_role(role_id)
         return None, http_client.NO_CONTENT
 
@@ -333,7 +368,7 @@ class ScimGroupResource(ks_flask.ResourceBase):
             action='identity:get_group',
             build_target=_build_group_target_enforcement
         )
-        ref = PROVIDERS.identity_api.get_group(group_id=group_id)
+        ref = PROVIDERS.identity_api.get_group(group_id)
         wrapped = self.wrap_member(ref)
         return conv.group_key2scim(wrapped['group'])
 
@@ -358,7 +393,7 @@ class ScimGroupResource(ks_flask.ResourceBase):
         scim = self._denormalize(group_data)
         group = conv.group_scim2key(scim)
         ref = PROVIDERS.identity_api.update_group(
-            group_id=group_id, group=group)
+            group_id, group)
         wrapped = self.wrap_member(ref)
         return conv.group_key2scim(ref.get('group', None))
 
