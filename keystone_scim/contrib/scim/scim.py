@@ -307,7 +307,11 @@ class ScimAllRoleResource(ScimRoleResource):
     def post(self):
         ids = []
         for role in flask.request.args.get('roles'):
-            self._require_attribute(role, 'name')
+            #self._require_attribute(role, 'name')
+            if self._is_domain_role(role):
+                ENFORCER.enforce_call(action='identity:create_domain_role')
+            else:
+                ENFORCER.enforce_call(action='identity:create_role')
             key_role = conv.role_scim2key(role)
             ref = self._assign_unique_id(key_role)
             created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
@@ -326,8 +330,21 @@ class ScimAllRoleResource(ScimRoleResource):
         scim_page_info = get_scim_page_info(hints)
         roles = conv.listroles_key2scim(refs, scim_page_info)
         for role in roles['Resources']:
-            # Delete each role
             role_id = role['id']
+            try:
+                role = PROVIDERS.role_api.get_role(role_id)
+            except Exception as e:
+                err = e
+            finally:
+                if err is not None or not self._is_domain_role(role):
+                    ENFORCER.enforce_call(action='identity:delete_role')
+                    if err:
+                        raise err
+                else:
+                    ENFORCER.enforce_call(action='identity:delete_domain_role',
+                                      member_target_type='role',
+                                      member_target=role)
+            # Delete each role
             PROVIDERS.role_api.delete_role(role_id)
         return None, http_client.NO_CONTENT
     
@@ -373,8 +390,8 @@ class ScimGroupResource(ks_flask.ResourceBase):
         return conv.group_key2scim(wrapped['group'])
 
     def post(self):
-        group_data = self.request_body_json.get('group', {})
-        target = {'group': group}
+        group_data = self.request_body_json
+        target = {'group': group_data}
         ENFORCER.enforce_call(
             action='identity:create_group', target_attr=target
         )
