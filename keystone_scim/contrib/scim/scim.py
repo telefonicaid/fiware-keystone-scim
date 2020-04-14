@@ -194,6 +194,7 @@ class ScimUserResource(ks_flask.ResourceBase):
 class ScimRoleResource(ks_flask.ResourceBase):
     collection_key = 'Roles'
     member_key = 'role'
+    api_prefix = '/OS-SCIM'
 
     def __init__(self):
         super(ScimRoleResource, self).__init__()        
