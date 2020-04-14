@@ -241,7 +241,8 @@ class ScimRoleResource(ks_flask.ResourceBase):
         role_data = self.request_body_json
         #self._require_attribute(kwargs, 'name')
         if self._is_domain_role(role_data):
-            ENFORCER.enforce_call(action='identity:create_domain_role')
+            # FixMe use create_domain_role instead of create_role
+            ENFORCER.enforce_call(action='identity:create_role')
         else:
             ENFORCER.enforce_call(action='identity:create_role')
         key_role = conv.role_scim2key(role_data)
