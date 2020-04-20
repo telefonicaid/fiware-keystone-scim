@@ -160,7 +160,7 @@ class ScimUserResource(ks_flask.ResourceBase):
         return conv.user_key2scim(ref.get('user', None))
 
     def patch(self, user_id):
-        user_data = self.request_body_json.get('user', {})
+        user_data = self.request_body_json
         user_data = self._normalize_dict(user_data)
         scim = self._denormalize(user_data)
         user = conv.user_scim2key(scim)
@@ -408,7 +408,7 @@ class ScimGroupResource(ks_flask.ResourceBase):
             action='identity:update_group',
             build_target=_build_group_target_enforcement
         )
-        group_data = self.request_body_json.get('group', {})
+        group_data = self.request_body_json
         scim = self._denormalize(group_data)
         group = conv.group_scim2key(scim)
         ref = PROVIDERS.identity_api.update_group(
