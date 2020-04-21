@@ -67,7 +67,10 @@ def pagination(hints=None):
 
 def get_scim_page_info(hints):
     page_info = { "totalResults": 0 }
-    page_info["totalResults"] = hints.scim_total
+    try:
+        page_info["totalResults"] = hints.scim_total
+    except Exception:
+        pass
     if flask.request.args.get('startIndex'):
         page_info["startIndex"] = hints.scim_offset
     if flask.request.args.get('count'):
