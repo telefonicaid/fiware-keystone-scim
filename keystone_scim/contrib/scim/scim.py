@@ -355,8 +355,6 @@ class ScimAllRoleResource(ScimRoleResource):
     
     
 class ScimGroupResource(ks_flask.ResourceBase):
-    #collection_name = 'groups'
-    #member_name = 'group'
     collection_key = 'Groups'
     member_key = 'group'
     api_prefix = '/OS-SCIM'
