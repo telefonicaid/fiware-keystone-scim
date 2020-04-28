@@ -18,8 +18,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from keystone.common import extension
-
 
 EXTENSION_DATA = {
     'name': 'OpenStack SCIM API',
@@ -35,9 +33,6 @@ EXTENSION_DATA = {
         }
     ]
 }
-
-extension.register_admin_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
-extension.register_public_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
 
 # Monkey patch SQL pagination
 

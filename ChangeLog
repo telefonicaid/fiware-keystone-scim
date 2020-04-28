@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+v1.5.0
+------
+Add: migrated fully to use flask middleware (Stein)
+
 v1.4.0
 ------
 Add: compatibility with flask middleware for (Rocky)
