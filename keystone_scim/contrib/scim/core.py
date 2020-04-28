@@ -18,8 +18,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-#from keystone.common import extension
-
 
 EXTENSION_DATA = {
     'name': 'OpenStack SCIM API',
