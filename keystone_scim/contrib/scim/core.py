@@ -36,9 +36,6 @@ EXTENSION_DATA = {
     ]
 }
 
-#extension.register_admin_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
-#extension.register_public_extension(EXTENSION_DATA['alias'], EXTENSION_DATA)
-
 # Monkey patch SQL pagination
 
 def decorate_core_limit(f):
