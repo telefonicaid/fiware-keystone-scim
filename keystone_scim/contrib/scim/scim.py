@@ -339,6 +339,8 @@ class ScimAllRoleResource(ScimRoleResource):
         for role in roles['Resources']:
             role_id = role['id']
             try:
+                err = None
+                role = {}
                 role = PROVIDERS.role_api.get_role(role_id)
             except Exception as e:
                 err = e
