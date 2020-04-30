@@ -311,17 +311,19 @@ class ScimAllRoleResource(ScimRoleResource):
     
     def post(self):
         ids = []
-        for role in flask.request.args.get('roles'):
-            #self._require_attribute(role, 'name')
-            if self._is_domain_role(role):
-                ENFORCER.enforce_call(action='identity:create_domain_role')
+        roles_data = self.request_body_json
+        for role_data in roles_data['roles']:
+            #self._require_attribute(role_data, 'name')
+            if self._is_domain_role(role_data):
+                # FixMe use create_domain_role instead of create_role
+                ENFORCER.enforce_call(action='identity:create_role')
             else:
                 ENFORCER.enforce_call(action='identity:create_role')
-            key_role = conv.role_scim2key(role)
+            key_role = conv.role_scim2key(role_data)
             ref = self._assign_unique_id(key_role)
             created_ref = PROVIDERS.role_api.create_role(ref['id'], ref)
             ids.append(conv.role_key2scim(created_ref))
-        return ids
+        return ids, http_client.CREATED
 
     def delete(self):
         filters = ('domain_id')
