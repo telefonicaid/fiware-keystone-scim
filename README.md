@@ -1,5 +1,10 @@
 # Keystone SCIM extension
 
+[![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/security.svg)](https://www.fiware.org/developers/catalogue/)
+[![License: Apache 2.0](https://img.shields.io/github/license/telefonicaid/fiware-keystone-scim.svg)](https://opensource.org/licenses/Apache-2.0)
+<br/>
+![Status](https://nexus.lab.fiware.org/static/badges/statuses/incubating.svg)
+
 Keystone SCIM is an OpenStack Keystone extension that enables the management
 of User, Groups and Roles using [SCIM v1.1 standard](
 http://www.simplecloud.info). As any Keystone extension, it's designed to be
