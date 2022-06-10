@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
+
 v1.5.0
 ------
 Add: migrated fully to use flask middleware (Stein)

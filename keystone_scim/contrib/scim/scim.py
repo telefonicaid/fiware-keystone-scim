@@ -136,6 +136,13 @@ class ScimUserResource(ks_flask.ResourceBase):
         refs = PROVIDERS.identity_api.list_users(
             domain_scope=domain, hints=hints)
         scim_page_info = get_scim_page_info(hints)
+        # Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
+        if "totalResults" in scim_page_info and scim_page_info['totalResults'] == 0 and len(refs) > 0:
+            scim_page_info['totalResults'] = len(refs)
+            if "itemsPerPage" in scim_page_info and "startIndex" in scim_page_info:
+                start = int(scim_page_info['startIndex'])
+                end = int(scim_page_info['startIndex']) + int(scim_page_info['itemsPerPage'])
+                refs = refs[start : end]
         res = conv.listusers_key2scim(refs, scim_page_info)
         return res
 
@@ -227,6 +234,13 @@ class ScimRoleResource(ks_flask.ResourceBase):
                               filters=filters)
         refs = PROVIDERS.role_api.list_roles(hints=pagination(hints))
         scim_page_info = get_scim_page_info(hints)
+        # Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
+        if "totalResults" in scim_page_info and scim_page_info['totalResults'] == 0 and len(refs) > 0:
+            scim_page_info['totalResults'] = len(refs)
+            if "itemsPerPage" in scim_page_info and "startIndex" in scim_page_info:
+                start = int(scim_page_info['startIndex'])
+                end = int(scim_page_info['startIndex']) + int(scim_page_info['itemsPerPage'])
+                refs = refs[start : end]
         return conv.listroles_key2scim(refs, scim_page_info)
 
     def _get_role(self, role_id):
@@ -385,6 +399,13 @@ class ScimGroupResource(ks_flask.ResourceBase):
         refs = PROVIDERS.identity_api.list_groups(
             domain_scope=domain, hints=hints)
         scim_page_info = get_scim_page_info(hints)
+        # Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
+        if "totalResults" in scim_page_info and scim_page_info['totalResults'] == 0 and len(refs) > 0:
+            scim_page_info['totalResults'] = len(refs)
+            if "itemsPerPage" in scim_page_info and "startIndex" in scim_page_info:
+                start = int(scim_page_info['startIndex'])
+                end = int(scim_page_info['startIndex']) + int(scim_page_info['itemsPerPage'])
+                refs = refs[start : end]
         return conv.listgroups_key2scim(refs, scim_page_info)
 
     def _get_group(self, group_id):
