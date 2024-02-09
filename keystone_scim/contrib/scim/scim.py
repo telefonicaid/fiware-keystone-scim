@@ -62,7 +62,7 @@ def pagination(hints=None):
         hints.scim_offset = q['startIndex']
     except KeyError:
         pass
-    hints.scim_order_by = 'name'
+    #hints.scim_order_by = 'name'
     return hints
 
 def get_scim_page_info(hints):

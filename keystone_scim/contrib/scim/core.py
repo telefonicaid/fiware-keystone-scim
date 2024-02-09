@@ -40,10 +40,10 @@ def decorate_core_limit(f):
     def limit_scim_extenstion(query, hints):
         query = f(query, hints)
         total = query.count()
-        try:
-            query = query.order_by(hints.scim_order_by)
-        except AttributeError:
-            pass
+        #try:
+        #  #  query = query.order_by(hints.scim_order_by)
+        #except AttributeError:
+        #    pass
         try:
             query = query.offset(hints.scim_offset)
         except AttributeError:
