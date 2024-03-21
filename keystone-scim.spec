@@ -25,6 +25,9 @@ BuildArch: noarch
 %if 0%{?with_python39}
 %define python_lib /usr/lib/python3.9/site-packages
 %endif # if with_python39
+%if 0%{?with_python311}
+%define python_lib /usr/lib/python3.11/site-packages
+%endif # if with_python311
 
 %define check_paste %(test -e /etc/keystone/keystone-paste.ini && echo 1 || echo 0)
 %if %check_paste

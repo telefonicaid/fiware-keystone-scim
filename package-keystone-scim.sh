@@ -16,6 +16,7 @@ ELEMENTS=${#args[@]}
 PYTHON27_VALUE=0
 PYTHON36_VALUE=0
 PYTHON39_VALUE=0
+PYTHON311_VALUE=0
 
 for (( i=0;i<$ELEMENTS;i++)); do
     arg=${args[${i}]}
@@ -27,6 +28,9 @@ for (( i=0;i<$ELEMENTS;i++)); do
     fi
     if [ "$arg" == "--with-python39" ]; then
         PYTHON39_VALUE=1
+    fi
+    if [ "$arg" == "--with-python311" ]; then
+        PYTHON311_VALUE=1
     fi
     if [ "$arg" == "--with-version" ]; then
         VERSION_VALUE=${args[${i}+1]}
@@ -46,4 +50,5 @@ rpmbuild -bb keystone-scim.spec \
   --define "_release $RELEASE_VALUE"\
   --define "with_python27 $PYTHON27_VALUE"\
   --define "with_python36 $PYTHON36_VALUE"\
-  --define "with_python39 $PYTHON39_VALUE"
+  --define "with_python39 $PYTHON39_VALUE"\
+  --define "with_python311 $PYTHON311_VALUE"
