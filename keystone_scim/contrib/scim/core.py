@@ -18,6 +18,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from sqlalchemy.sql import text
 
 EXTENSION_DATA = {
     'name': 'OpenStack SCIM API',
@@ -40,6 +41,13 @@ def decorate_core_limit(f):
     def limit_scim_extenstion(query, hints):
         query = f(query, hints)
         total = query.count()
+        try:
+            if "group_name" in str(query):
+               query = query.order_by(text("group_name asc"))
+            if "role_name" in str(query):
+               query = query.order_by(text("role_name asc"))
+        except AttributeError:
+            pass
         try:
             query = query.offset(hints.scim_offset)
         except AttributeError:
