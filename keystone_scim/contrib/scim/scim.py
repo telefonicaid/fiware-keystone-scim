@@ -233,7 +233,6 @@ class ScimRoleResource(ks_flask.ResourceBase):
         ENFORCER.enforce_call(action='identity:list_roles',
                               filters=filters)
         refs = PROVIDERS.role_api.list_roles(hints=pagination(hints))
-        #refs.sort(key=lambda d: d['name'])
         scim_page_info = get_scim_page_info(hints)
         # Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
         if "totalResults" in scim_page_info and scim_page_info['totalResults'] == 0 and len(refs) > 0:
@@ -399,7 +398,6 @@ class ScimGroupResource(ks_flask.ResourceBase):
                               target_attr=target)
         refs = PROVIDERS.identity_api.list_groups(
             domain_scope=domain, hints=hints)
-        #refs.sort(key=lambda d: d['name'])
         scim_page_info = get_scim_page_info(hints)
         # Fix bug retrieving from LDAP which not uses decorete_core_limit and then no scim info in in hints
         if "totalResults" in scim_page_info and scim_page_info['totalResults'] == 0 and len(refs) > 0:
