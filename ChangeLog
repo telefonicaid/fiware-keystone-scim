@@ -2,6 +2,7 @@ CHANGES
 =======
 
 Fix: sql_order in sqlalchemy queries for user, groups and roles to ensure always order by name
+Delete old framework files
 
 v1.7.0
 ------
