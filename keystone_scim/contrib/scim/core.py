@@ -18,6 +18,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from sqlalchemy.sql import text
 
 EXTENSION_DATA = {
     'name': 'OpenStack SCIM API',
@@ -41,12 +42,28 @@ def decorate_core_limit(f):
         query = f(query, hints)
         total = query.count()
         try:
+            if "group_name" in str(query):
+               query = query.order_by(text("group_name asc"))
+            elif "role_name" in str(query):
+                query = query.order_by(text("role_name asc"))
+            elif str(query).startswith("SELECT user.enabled") and not "user_group_membership" in str(query) and "ORDER BY" in str(query) and "local_user_1.name" in str(query) and hints.scim_offset and hints.scim_limit:
+               query = query.order_by(text("local_user.name asc"))
+        except Exception:
+            pass
+        try:
             query = query.offset(hints.scim_offset)
         except AttributeError:
             pass
         try:
             query = query.limit(hints.scim_limit)
         except AttributeError:
+            pass
+        try:
+            # Final check: some subqueries would be done before
+            if str(query).startswith("SELECT anon_1.user_enabled") and not "user_group_membership" in str(query) and "ORDER BY" in str(query) and "local_user_1.name" in str(query):
+                # Update last order_by, some limit and orffset were applied before
+                query = query.from_self().order_by(text("local_user_1.name asc"))
+        except Exception:
             pass
         hints.scim_total = total
         return query

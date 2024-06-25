@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+Fix: sql_order in sqlalchemy queries for user, groups and roles to ensure always order by name
+
 v1.7.0
 ------
 Upgrade to allow use with Python 3.6 and Python 3.9
