@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-Fix: sql_order in sqlalchemy queries for user, groups and roles to ensure always order by name
+Fix: sql_order in sqlalchemy queries for user, groups and roles to ensure always order by name (#70)
 Delete old framework files
 
 v1.7.0
